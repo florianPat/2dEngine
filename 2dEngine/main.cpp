@@ -2,7 +2,6 @@
 
 //TODO: Eventully write your own string class (and other std stuff) yourself ;)
 
-//NOTE: Headers
 #include "Window.h"
 #include "graphics2d.h"
 
@@ -18,8 +17,6 @@ int main()
 		gfx.clear();
 
 		gfx.putPixel(100, 100, 255, 255, 255);
-
-		gfx.drawRect(50, 50, 150, 150, 255, 255, 255);
 
 		gfx.render();
 

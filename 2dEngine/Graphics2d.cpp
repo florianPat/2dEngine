@@ -37,8 +37,13 @@ namespace eg
 		backBuffer[x + y * pitch] = (((uint8_t)r) | (((uint8_t)g) << 8) | (((uint8_t)b) << 16));
 	}
 
-	void Graphics2d::drawRect(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, int r, int g, int b)
+	void Graphics2d::draw(RectI& rect)
 	{
+		uint x0 = rect.left;
+		uint x1 = rect.right;
+		uint y0 = rect.top;
+		uint y1 = rect.bottom;
+
 		assert(x0 >= 0 && x0 <= width);
 		assert(y0 >= 0 && y0 <= height);
 		assert(x1 >= 0 && x1 <= width);
@@ -61,7 +66,7 @@ namespace eg
 		{
 			for (uint32_t x = x0; x < x1; ++x)
 			{
-				putPixel(x, y, r, g, b);
+				putPixel(x, y, rect.color.GetR(), rect.color.GetG(), rect.color.GetB());
 			}
 		}
 	}
