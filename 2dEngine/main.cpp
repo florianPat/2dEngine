@@ -5,14 +5,11 @@
 //NOTE: Headers
 #include "Window.h"
 #include "graphics2d.h"
-#include "Bitmap.h"
 
 int main()
 {
 	eg::Window window(900, 600, "Title", 1/60.0f);
-	eg::Graphics2d gfx(window, 900, 600);
-
-	//eg::Bitmap bitmap("");
+	eg::Graphics2d& gfx = window.getGfx();
 
 	while (window.isOpen())
 	{
@@ -24,11 +21,9 @@ int main()
 
 		gfx.drawRect(50, 50, 150, 150, 255, 255, 255);
 
-		//gfx.draw(bitmap, 0, 0);
+		gfx.render();
 
 		window.limitFrames();
-
-		gfx.render();
 	}
 	/*
 	eg::Game game(window, "LevelName.tmx");

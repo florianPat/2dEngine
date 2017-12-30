@@ -4,6 +4,7 @@
 #include <string>
 #include "Clock.h"
 #include <iostream>
+#include "Graphics2d.h"
 
 namespace eg
 {
@@ -42,7 +43,7 @@ namespace eg
 			friend class Window;
 
 			uint32_t buttons = 0;
-			//TODO: Make this a Vec2?
+			//TODO: Make this a Vec2
 			uint16_t xPos, yPos;
 		public:
 			enum class Button
@@ -79,6 +80,7 @@ namespace eg
 		LONGLONG performanceCounertFrequency;
 		Clock clock;
 		bool sleepIsGranulary = false;
+		Graphics2d gfx;
 	public:
 		Keyboard keyboard;
 		Mouse mouse;
@@ -90,6 +92,7 @@ namespace eg
 		void close();
 		void processMessages();
 		void limitFrames();
+		Graphics2d& getGfx() const;
 	private:
 		void ToggleFullscreen();
 		static LRESULT CALLBACK WindowProcInit(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

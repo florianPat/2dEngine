@@ -128,14 +128,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Bitmap.cpp" />
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="Graphics2d.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bitmap.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="Graphics2d.h" />

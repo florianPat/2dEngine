@@ -82,10 +82,10 @@ namespace eg
 			InvalidCodePath;
 			break;
 		}
-		case WM_ERASEBKGND:
+		/*case WM_ERASEBKGND:
 		{
 			break;
-		}
+		}*/
 		default:
 		{
 			result = DefWindowProcA(hwnd, uMsg, wParam, lParam);
@@ -105,7 +105,7 @@ namespace eg
 
 	Window::Window(const uint32_t& width, const uint32_t& height, const std::string& name, float framerateLimit, bool32_t hasCursor)
 		: framerateLimit(framerateLimit), hasCursor(hasCursor), keyboard(), mouse(), width(width), height(height), sleepIsGranulary((timeBeginPeriod(1) == TIMERR_NOERROR)),
-		  clock(1)
+		  clock(1), gfx(windowHandle, width, height)
 	{
 		LARGE_INTEGER performaceCountFrequency;
 		QueryPerformanceFrequency(&performaceCountFrequency);
@@ -155,13 +155,8 @@ namespace eg
 			{
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(windowHandle, &ps);
-				//TODO: Redraw game here!
-				PatBlt(hdc, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top, BLACKNESS);
+				gfx.render();
 				EndPaint(windowHandle, &ps);
-				break;
-			}
-			case WM_ERASEBKGND:
-			{
 				break;
 			}
 			case WM_SYSKEYDOWN:
@@ -254,6 +249,11 @@ namespace eg
 			//TOTO: Handle this!!
 			//InvalidCodePath;
 		}
+	}
+
+	Graphics2d & Window::getGfx() const
+	{
+		return (Graphics2d&)gfx;
 	}
 
 	void Window::ToggleFullscreen()
