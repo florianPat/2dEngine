@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include "Vec2.h"
 #include "Rect.h"
+#include "Circle.h"
 
 namespace eg
 {
@@ -25,6 +26,8 @@ namespace eg
 		void clear();
 		void putPixel(int x, int y, int r, int g, int b);
 		void draw(RectI& rect);
+		void draw(RectF& rect);
+		void draw(FloatCircle& circle);
 		void render();
 	};
 }

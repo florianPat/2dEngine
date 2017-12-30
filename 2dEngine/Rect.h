@@ -11,8 +11,8 @@ namespace eg
 		T left, right, top, bottom;
 		Color color;
 		Rect() = default;
-		Rect(T left, T right, T top, T bottom, Color c = Color()) : left(left), right(right), top(top), bottom(bottom), color(c) {}
-		Rect(Vec2_<T> topLeft, T width, T height, Color c = Color()) : left(topLeft.x), top(topLeft.y), right(topLeft.x + width), bottom(topLeft.y + height), color(c) {}
+		Rect(T left, T top, T right, T bottom, Color c = Color()) : left(left), right(right), top(top), bottom(bottom), color(c) {}
+		Rect(Vec2<T> topLeft, T width, T height, Color c = Color()) : left(topLeft.x), top(topLeft.y), right(topLeft.x + width), bottom(topLeft.y + height), color(c) {}
 		bool intersects(const Rect<T>& other) const
 		{
 			return (left < other.right && right > other.left &&	top < other.bottom && bottom > other.top);
@@ -20,5 +20,5 @@ namespace eg
 	};
 
 	typedef Rect<float> RectF;
-	typedef Rect<uint> RectI;
+	typedef Rect<int> RectI;
 }

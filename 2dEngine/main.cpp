@@ -10,6 +10,9 @@ int main()
 	eg::Window window(900, 600, "Title", 1/60.0f);
 	eg::Graphics2d& gfx = window.getGfx();
 
+	eg::RectF rect(200, 200, 400, 300);
+	eg::FloatCircle circle(700, 400, 50);
+
 	while (window.isOpen())
 	{
 		window.processMessages();
@@ -17,6 +20,8 @@ int main()
 		gfx.clear();
 
 		gfx.putPixel(100, 100, 255, 255, 255);
+		gfx.draw(rect);
+		gfx.draw(circle);
 
 		gfx.render();
 

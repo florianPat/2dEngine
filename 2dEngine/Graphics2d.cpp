@@ -71,6 +71,33 @@ namespace eg
 		}
 	}
 
+	void Graphics2d::draw(RectF & rect)
+	{
+		RectI drawRect((int)rect.left, (int)rect.top, (int)rect.right, (int)rect.bottom, rect.color);
+		draw(drawRect);
+	}
+
+	void Graphics2d::draw(FloatCircle & circle)
+	{
+		int diameter = 2 * (int)circle.radius;
+		Vei2 circleCenter((int)circle.center.x, (int)circle.center.y);
+		int radiusSq = (int)circle.radius * (int)circle.radius;
+		RectI boundingRect({ (int)circle.center.x - (int)circle.radius, (int)circle.center.y - (int)circle.radius }, diameter, diameter);
+
+		for (int y = boundingRect.top; y <= boundingRect.bottom; ++y)
+		{
+			for (int x = boundingRect.left; x <= boundingRect.right; ++x)
+			{
+				Vei2 point(x, y);
+				Vei2 lengthVec(circleCenter - point);
+				if (lengthVec.getLenghtSq() <= radiusSq)
+				{
+					putPixel(point.x, point.y, circle.color.GetR(), circle.color.GetG(), circle.color.GetB());
+				}
+			}
+		}
+	}
+
 	void Graphics2d::render()
 	{
 		HDC dc = GetDC(windowHandle);

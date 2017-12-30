@@ -5,36 +5,36 @@
 namespace eg
 {
 	template<typename T>
-	struct Vec2_
+	struct Vec2
 	{
 		T x, y;
-		Vec2_() = default;
-		Vec2_(T x, T y) : x(x), y(y) {}
-		Vec2_ operator+(const Vec2_<T>& rhs) const
+		Vec2() = default;
+		Vec2(T x, T y) : x(x), y(y) {}
+		Vec2 operator+(const Vec2<T>& rhs) const
 		{
-			return Vec2_(x + rhs.x, y + rhs.y);
+			return Vec2(x + rhs.x, y + rhs.y);
 		}
-		Vec2_& operator+=(const Vec2_<T>& rhs)
+		Vec2& operator+=(const Vec2<T>& rhs)
 		{
 			x += rhs.x;
 			y += rhs.y;
 			return *this;
 		}
-		Vec2_ operator-(const Vec2_<T>& rhs) const
+		Vec2 operator-(const Vec2<T>& rhs) const
 		{
-			return Vec2_(x - rhs.x, y - rhs.y);
+			return Vec2(x - rhs.x, y - rhs.y);
 		}
-		Vec2_& operator-=(const Vec2_<T>& rhs)
+		Vec2& operator-=(const Vec2<T>& rhs)
 		{
 			x -= rhs.x;
 			y -= rhs.y;
 			return *this;
 		}
-		Vec2_ operator*(const T rhs) const
+		Vec2 operator*(const T rhs) const
 		{
-			return Vec2_(x * rhs, y * rhs);
+			return Vec2(x * rhs, y * rhs);
 		}
-		Vec2_& operator*=(const T rhs)
+		Vec2& operator*=(const T rhs)
 		{
 			x *= rhs;
 			y *= rhs;
@@ -48,20 +48,20 @@ namespace eg
 		{
 			return x * x + y * y;
 		}
-		Vec2_& normalize()
+		Vec2& normalize()
 		{
 			T length = getLenght();
 			x /= length;
 			y /= length;
 			return *this;
 		}
-		Vec2_ getNormalized() const
+		Vec2 getNormalized() const
 		{
 			T lenght = getLenght();
-			return Vec2_(x / lenght, y / lenght);
+			return Vec2(x / lenght, y / lenght);
 		}
 	};
 
-	typedef Vec2_<float> Vec2;
-	typedef Vec2_<int> Vei2;
+	typedef Vec2<float> Vec2f;
+	typedef Vec2<int> Vei2;
 }
