@@ -178,6 +178,15 @@ namespace eg
 			               max(max(points[0].x, points[1].x), max(points[2].x, points[3].x)), 
 			               max(max(points[0].y, points[1].y), max(points[2].y, points[3].y)));
 
+		if (boundingRect.left < 0)
+			boundingRect.left = 0;
+		if (boundingRect.right >= width)
+			boundingRect.right = width - 1;
+		if (boundingRect.top < 0)
+			boundingRect.top = 0;
+		if (boundingRect.bottom >= height)
+			boundingRect.bottom = height - 1;
+
 		for (int y = (int)boundingRect.top; y < (int)boundingRect.bottom; ++y)
 		{
 			for (int x = (int)boundingRect.left; x < (int)boundingRect.right; ++x)
