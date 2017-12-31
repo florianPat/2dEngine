@@ -6,6 +6,7 @@
 #include "Circle.h"
 #include "Sprite.h"
 #include "Color.h"
+#include "ORect.h"
 
 namespace eg
 {
@@ -33,6 +34,7 @@ namespace eg
 		void draw(RectF& rect);
 		void draw(FloatCircle& circle);
 		void draw(const Sprite& sprite);
+		void draw(const ORectF& oRect);
 		void render();
 	};
 }

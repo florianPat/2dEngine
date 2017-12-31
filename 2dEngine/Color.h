@@ -54,7 +54,7 @@ namespace Colors
 {
 	static constexpr Color MakeRGB(unsigned char r, unsigned char g, unsigned char b)
 	{
-		return (((uchar)255) << 24) | (r << 16) | (g << 8) | b;
+		return (r << 16) | (g << 8) | b;
 	}
 	static constexpr Color White = MakeRGB(255u, 255u, 255u);
 	static constexpr Color Black = MakeRGB(0u, 0u, 0u);

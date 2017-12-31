@@ -40,6 +40,14 @@ namespace eg
 			y *= rhs;
 			return *this;
 		}
+		T operator*(const Vec2<T> rhs)
+		{
+			return x * rhs.x + y * rhs.y;
+		}
+		Vec2 operator-() const
+		{
+			return Vec2{ -x, -y };
+		}
 		T getLenght() const
 		{
 			return (T)sqrtf((float)getLenghtSq());

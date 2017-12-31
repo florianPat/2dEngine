@@ -167,6 +167,35 @@ namespace eg
 		}
 	}
 
+	void Graphics2d::draw(const ORectF & oRect)
+	{
+		Vec2f points[4];
+		Vec2f axis[2];
+		oRect.getPointsAxis(points, axis);
+
+		RectF boundingRect(min(min(points[0].x, points[1].x), min(points[2].x, points[3].x)), 
+						   min(min(points[0].y, points[1].y), min(points[2].y, points[3].y)), 
+			               max(max(points[0].x, points[1].x), max(points[2].x, points[3].x)), 
+			               max(max(points[0].y, points[1].y), max(points[2].y, points[3].y)));
+
+		for (int y = (int)boundingRect.top; y < (int)boundingRect.bottom; ++y)
+		{
+			for (int x = (int)boundingRect.left; x < (int)boundingRect.right; ++x)
+			{
+				Vec2f testVec((float)x, (float)y);
+
+				float edge1 = -axis[1] * (testVec - oRect.pos);
+				float edge2 = axis[0] * (testVec - (oRect.pos + (oRect.xAxis * oRect.width)));
+				float edge3 = axis[1] * (testVec - (oRect.pos + (oRect.xAxis * oRect.width) + (oRect.yAxis * oRect.height)));
+				float edge4 = -axis[0] * (testVec - (oRect.pos + (oRect.yAxis * oRect.height)));
+
+				if (edge1 <= 0 && edge2 <= 0 &&
+					edge3 <= 0 && edge4 <= 0)
+					putPixel(x, y, oRect.color);
+			}
+		}
+	}
+
 	void Graphics2d::render()
 	{
 		HDC dc = GetDC(windowHandle);

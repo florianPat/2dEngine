@@ -4,6 +4,7 @@
 
 #include "Window.h"
 #include "Graphics2d.h"
+#include "Color.h"
 
 int main()
 {
@@ -14,6 +15,7 @@ int main()
 	eg::FloatCircle circle(850, 540, 100);
 	eg::Texture texture("dib.bmp");
 	eg::Sprite sprite(texture);
+	eg::ORectF oRect(200, 200, 100, 100, 45, eg::Vec2f{ 0.0f, 0.0f });
 
 	sprite.pos.x = -10.0f;
 	sprite.pos.y = 400.0f;
@@ -22,11 +24,14 @@ int main()
 	{
 		window.processMessages();
 
+		oRect.setAngle(oRect.getAngle() + 5.0f);
+
 		gfx.clear();
 
 		gfx.draw(rect);
 		gfx.draw(circle);
 		gfx.draw(sprite);
+		gfx.draw(oRect);
 
 		gfx.render();
 
