@@ -132,6 +132,9 @@
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="Graphics2d.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RenderTexture.cpp" />
+    <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +144,9 @@
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="Graphics2d.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="RenderTexture.h" />
+    <ClInclude Include="Sprite.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Vec2.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>

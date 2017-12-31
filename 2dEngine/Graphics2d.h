@@ -4,6 +4,8 @@
 #include "Vec2.h"
 #include "Rect.h"
 #include "Circle.h"
+#include "Sprite.h"
+#include "Color.h"
 
 namespace eg
 {
@@ -19,15 +21,18 @@ namespace eg
 		uint32_t pitch;
 	private:
 		Graphics2d(HWND& windowHandle, int width, int height);
+		void ClipRect(int& x, int& y);
 	public:
 		~Graphics2d();
 		Graphics2d(const Graphics2d&) = delete;
 		Graphics2d& operator=(const Graphics2d&) = delete;
 		void clear();
-		void putPixel(int x, int y, int r, int g, int b);
+		void putPixel(int x, int y, Color c);
+		Color getPixel(uint x, uint y);
 		void draw(RectI& rect);
 		void draw(RectF& rect);
 		void draw(FloatCircle& circle);
+		void draw(const Sprite& sprite);
 		void render();
 	};
 }
