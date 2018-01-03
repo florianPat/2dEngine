@@ -21,6 +21,7 @@ int main()
 		gfx.clear();
 
 		sprite.rotation += 0.125f;
+		sprite.scale = 0.5f;
 
 		gfx.draw(sprite);
 

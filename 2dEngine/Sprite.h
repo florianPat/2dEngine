@@ -15,7 +15,6 @@ namespace eg
 		RectI textureRect = { 0, 0, 0, 0 };
 		Vec2f origin = { 0.0f, 0.0f };
 		float rotation = 0.0f;
-		//TODO: Add scaling
 		float scale = 1.0f;
 	public:
 		Sprite() = default;

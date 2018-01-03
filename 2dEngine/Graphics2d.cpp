@@ -146,10 +146,10 @@ namespace eg
 
 		Vec2f xAxis = { cosf(sprite.rotation), sinf(sprite.rotation) };
 		xAxis.normalize();
-		xAxis *= (float)sprite.texture.getWidth();
+		xAxis *= (float)sprite.texture.getWidth() * sprite.scale;
 		Vec2f yAxis = { (-sinf(sprite.rotation)), cosf(sprite.rotation) };
 		yAxis.normalize();
-		yAxis *= (float)sprite.texture.getHeight();
+		yAxis *= (float)sprite.texture.getHeight() * sprite.scale;
 
 		Vec2f points[4] = { {sprite.pos}, {sprite.pos.x + sprite.texture.getWidth(), sprite.pos.y}, 
 							{sprite.pos.x, sprite.pos.y + sprite.texture.getHeight()}, {sprite.pos.x + sprite.texture.getWidth(), sprite.pos.y + sprite.texture.getHeight()} };
