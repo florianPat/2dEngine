@@ -2,6 +2,14 @@
 
 namespace eg
 {
+	float Lerp(float a, float t, float b)
+	{
+		return ((1.0f - t)*a + t * b);
+	}
+}
+
+namespace eg
+{
 	Graphics2d::Graphics2d(HWND& windowHandle, int width, int height)
 		: windowHandle(windowHandle), width(width),
 		height(height), pitch(width),
@@ -136,33 +144,87 @@ namespace eg
 	{
 		int clipX = 0, clipY = 0, clipWidth = 0, clipHeight = 0;
 
-		if (sprite.pos.x < 0)
-			clipX = (int)-sprite.pos.x;
-		else if (sprite.pos.x + sprite.texture.getWidth() >= width)
-			clipWidth = (int)sprite.pos.x + sprite.texture.getWidth() - width + 1;
+		Vec2f xAxis = { cosf(sprite.rotation), sinf(sprite.rotation) };
+		xAxis.normalize();
+		xAxis *= (float)sprite.texture.getWidth();
+		Vec2f yAxis = { (-sinf(sprite.rotation)), cosf(sprite.rotation) };
+		yAxis.normalize();
+		yAxis *= (float)sprite.texture.getHeight();
 
-		if (sprite.pos.y < 0)
-			clipY = (int)-sprite.pos.y;
-		else if (sprite.pos.y + sprite.texture.getHeight() >= height)
-			clipHeight = (int)sprite.pos.y + sprite.texture.getHeight() - height + 1;
+		Vec2f points[4] = { {sprite.pos}, {sprite.pos.x + sprite.texture.getWidth(), sprite.pos.y}, 
+							{sprite.pos.x, sprite.pos.y + sprite.texture.getHeight()}, {sprite.pos.x + sprite.texture.getWidth(), sprite.pos.y + sprite.texture.getHeight()} };
 
-		for (int y = clipY; y < sprite.texture.getHeight() - clipHeight; ++y)
+		Vec2f origin = sprite.pos + sprite.origin;
+
+		for (int i = 0; i < 4; ++i)
 		{
-			for (int x = clipX; x < sprite.texture.getWidth() - clipWidth; ++x)
+			points[i] = Vec2f(sprite.pos + xAxis * (points[i].x - origin.x) + yAxis * (points[i].y - origin.y));
+		}
+
+		RectF boundingRect(min(min(points[0].x, points[1].x), min(points[2].x, points[3].x)),
+			min(min(points[0].y, points[1].y), min(points[2].y, points[3].y)),
+			max(max(points[0].x, points[1].x), max(points[2].x, points[3].x)),
+			max(max(points[0].y, points[1].y), max(points[2].y, points[3].y)));
+
+		if (boundingRect.left < 0.0f)
+			boundingRect.left = 0;
+		if (boundingRect.right >= (float)width)
+			boundingRect.right = width - 1.0f;
+		if (boundingRect.top < 0.0f)
+			boundingRect.top = 0.0f;
+		if (boundingRect.bottom >= (float)height)
+			boundingRect.bottom = height - 1.0f;
+
+		for (int y = (int)boundingRect.top; y < (int)boundingRect.bottom; ++y)
+		{
+			for (int x = (int)boundingRect.left; x < (int)boundingRect.right; ++x)
 			{
-				Color c;
+				Vec2f testVec((float)x, (float)y);
 
-				Color sc = sprite.texture.getPixel(x, y);
-				float rScA = sc.GetA() / 255.0f;
-				Color dc = getPixel(x + (int)sprite.pos.x, y + (int)sprite.pos.y);
-				float rDcA = dc.GetA() / 255.0f;
+				float edge1 = -yAxis * (testVec - sprite.pos);
+				float edge2 = xAxis * (testVec - (sprite.pos + xAxis));
+				float edge3 = yAxis * (testVec - (sprite.pos + xAxis + yAxis));
+				float edge4 = -xAxis * (testVec - (sprite.pos + yAxis));
 
-				c.SetR((char)((sc.GetR() + (dc.GetR() * (1 - rScA))) + 0.5f));
-				c.SetG((char)((sc.GetG() + (dc.GetG() * (1 - rScA))) + 0.5f));
-				c.SetB((char)((sc.GetB() + (dc.GetB() * (1 - rScA))) + 0.5f));
-				c.SetA((char)((rScA + rDcA - rScA * rDcA) * 255.0f));
+				if (edge1 <= 0 && edge2 <= 0 &&
+					edge3 <= 0 && edge4 <= 0)
+				{
+					Vec2f point = testVec - sprite.pos;
+					float u = (point * xAxis) / xAxis.getLenghtSq();
+					float v = (point * yAxis) / yAxis.getLenghtSq();
 
-				putPixel(x + (uint)sprite.pos.x, y + (uint)sprite.pos.y, c);
+					float texelX = u * (sprite.texture.getWidth() - 2);
+					float texelY = v * (sprite.texture.getHeight() - 2);
+
+					int iX = (int)texelX;
+					int iY = (int)texelY;
+
+					float fX = texelX - iX;
+					float fY = texelY - iY;
+
+					Color texelA = sprite.texture.getPixel(iX, iY), texelB = sprite.texture.getPixel(iX + 1, iY), texelC = sprite.texture.getPixel(iX, iY + 1),
+						texelD = sprite.texture.getPixel(iX + 1, iY + 1);
+
+					Color c;
+
+					Color sc;
+					sc.SetR((uchar)(Lerp(Lerp(texelA.GetR() / 255.0f, fX, texelB.GetR() / 255.0f), fY, Lerp(texelC.GetR() / 255.0f, fX, texelD.GetR() / 255.0f)) * 255));
+					sc.SetG((uchar)(Lerp(Lerp(texelA.GetG() / 255.0f, fX, texelB.GetG() / 255.0f), fY, Lerp(texelC.GetG() / 255.0f, fX, texelD.GetG() / 255.0f)) * 255));
+					sc.SetB((uchar)(Lerp(Lerp(texelA.GetB() / 255.0f, fX, texelB.GetB() / 255.0f), fY, Lerp(texelC.GetB() / 255.0f, fX, texelD.GetB() / 255.0f)) * 255));
+					sc.SetA((uchar)(Lerp(Lerp(texelA.GetA() / 255.0f, fX, texelB.GetA() / 255.0f), fY, Lerp(texelC.GetA() / 255.0f, fX, texelD.GetA() / 255.0f)) * 255));
+
+					float rScA = sc.GetA() / 255.0f;
+					
+					Color dc = getPixel(x + (int)sprite.pos.x, y + (int)sprite.pos.y);
+					float rDcA = dc.GetA() / 255.0f;
+
+					c.SetR((char)((sc.GetR() + (dc.GetR() * (1 - rScA))) + 0.5f));
+					c.SetG((char)((sc.GetG() + (dc.GetG() * (1 - rScA))) + 0.5f));
+					c.SetB((char)((sc.GetB() + (dc.GetB() * (1 - rScA))) + 0.5f));
+					c.SetA((char)((rScA + rDcA - rScA * rDcA) * 255.0f));
+
+					putPixel(x + (uint)sprite.pos.x, y + (uint)sprite.pos.y, c);
+				}
 			}
 		}
 	}
@@ -181,11 +243,11 @@ namespace eg
 		if (boundingRect.left < 0)
 			boundingRect.left = 0;
 		if (boundingRect.right >= width)
-			boundingRect.right = width - 1;
+			boundingRect.right = width - 1.0f;
 		if (boundingRect.top < 0)
 			boundingRect.top = 0;
 		if (boundingRect.bottom >= height)
-			boundingRect.bottom = height - 1;
+			boundingRect.bottom = height - 1.0f;
 
 		for (int y = (int)boundingRect.top; y < (int)boundingRect.bottom; ++y)
 		{

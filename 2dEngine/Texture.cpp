@@ -39,14 +39,14 @@ namespace eg
 			width = bmInfoHeader.biWidth;
 			height = bmInfoHeader.biHeight;
 
+			bool isBottomUp = height < 0;
+			if (isBottomUp)
+				height *= -1;
+
 			pixels = new Color[width * height];
 
 			int padding = ((bitCount * width + 31) / 32) * 4;
 			bool isBitfield = bmInfoHeader.biCompression == BI_BITFIELDS;
-
-			bool isBottomUp = height < 0;
-			if (isBottomUp)
-				height *= -1;
 
 			file.seekg(fileOffsetToPixels, std::ios::cur);
 
