@@ -105,7 +105,7 @@ namespace eg
 
 	Window::Window(const uint32_t& width, const uint32_t& height, const std::string& name, float framerateLimit, bool32_t hasCursor)
 		: framerateLimit(framerateLimit), hasCursor(hasCursor), keyboard(), mouse(), width(width), height(height), sleepIsGranulary((timeBeginPeriod(1) == TIMERR_NOERROR)),
-		  clock(1), gfx(windowHandle, width, height)
+		  clock(1), gfx(windowHandle, width, height), snd()
 	{
 		LARGE_INTEGER performaceCountFrequency;
 		QueryPerformanceFrequency(&performaceCountFrequency);
@@ -123,6 +123,7 @@ namespace eg
 
 			if (windowHandle)
 			{
+				snd = Sound(windowHandle);
 				clock = Clock(performanceCounertFrequency);
 				return;
 			}
@@ -254,6 +255,11 @@ namespace eg
 	Graphics2d & Window::getGfx() const
 	{
 		return (Graphics2d&)gfx;
+	}
+
+	Sound & Window::getSnd() const
+	{
+		return (Sound&)snd;
 	}
 
 	void Window::ToggleFullscreen()

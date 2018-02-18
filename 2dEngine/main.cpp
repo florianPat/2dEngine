@@ -5,14 +5,13 @@
 #include "Window.h"
 #include "Graphics2d.h"
 #include "Color.h"
+#include "Sound.h"
 
 int main()
 {
 	eg::Window window(900, 600, "Title", 1/60.0f);
 	eg::Graphics2d& gfx = window.getGfx();
-
-	eg::Texture texture("dib.bmp");
-	eg::Sprite sprite(texture);
+	eg::Sound snd = window.getSnd();
 
 	while (window.isOpen())
 	{
@@ -20,12 +19,9 @@ int main()
 
 		gfx.clear();
 
-		sprite.rotation += 0.125f;
-		sprite.scale = 0.5f;
-
-		gfx.draw(sprite);
-
 		gfx.render();
+
+		snd.outputTest();
 
 		window.limitFrames();
 	}

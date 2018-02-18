@@ -134,6 +134,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ORect.cpp" />
     <ClCompile Include="RenderTexture.cpp" />
+    <ClCompile Include="Sound.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="window.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="ORect.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="RenderTexture.h" />
+    <ClInclude Include="Sound.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Vec2.h" />
