@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <string>
+#include <intrin.h>
 
 #define global_variable static
 #define local_persist static

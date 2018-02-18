@@ -5,13 +5,16 @@
 #include "Window.h"
 #include "Graphics2d.h"
 #include "Color.h"
+#include "Audio.h"
 #include "Sound.h"
 
 int main()
 {
 	eg::Window window(900, 600, "Title", 1/60.0f);
 	eg::Graphics2d& gfx = window.getGfx();
-	eg::Sound snd = window.getSnd();
+	eg::Audio audio = window.getAudio();
+
+	eg::Sound sound("AllStars.wav");
 
 	while (window.isOpen())
 	{
@@ -21,7 +24,7 @@ int main()
 
 		gfx.render();
 
-		snd.outputTest();
+		audio.outputTest();
 
 		window.limitFrames();
 	}

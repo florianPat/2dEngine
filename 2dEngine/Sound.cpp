@@ -1,128 +1,108 @@
 #include "Sound.h"
+#include <fstream>
+#include <memory>
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-
-#define DIRECT_SOUND_CREATE(name) HRESULT WINAPI name(LPGUID, LPDIRECTSOUND*, LPUNKNOWN)
-typedef DIRECT_SOUND_CREATE(direct_sound_create);
-
-eg::Sound::Sound(HWND windowHandle, int samlesPerSecound, int bufferSize) : samplesPerSecound(samlesPerSecound), wavePeriod(samlesPerSecound/hz),
-																			bufferSize(bufferSize)
+eg::Sound::Sound(const std::string & filename)
 {
-	HMODULE dSoundLibary = LoadLibraryA("dsound.dll");
+	std::ifstream file(filename, std::ifstream::binary);
 
-	if (dSoundLibary)
+	if (!file.good())
 	{
-		direct_sound_create* directSoundCreate = (direct_sound_create*) GetProcAddress(dSoundLibary, "DirectSoundCreate");
+		utilsLogBreak("Could not open file!");
+	}
 
-		if (directSoundCreate)
+	file.seekg(0, file.end);
+	int fileSize = (int) file.tellg();
+	file.seekg(0, file.beg);
+
+	std::unique_ptr<char[]> fileContents = std::make_unique<char[]>(fileSize);
+	file.read(fileContents.get(), fileSize);
+
+	FileHeader* fileHeader = (FileHeader*) fileContents.get();
+
+	assert(fileHeader->riffId == (uint)ChunkId::RIFF);
+	assert(fileHeader->waveId == (uint)ChunkId::WAVE);
+
+	short* sampleData = nullptr;
+	uint sampleDataSize = 0;
+
+	for (RiffIt it = RiffIt(fileHeader + 1, (fileHeader + 1) + fileHeader->size - 4); it && (!sampleData || !nChannels); ++it)
+	{
+		switch (it.getType())
 		{
-			LPDIRECTSOUND directSound;
-			if (SUCCEEDED(directSoundCreate(0, &directSound, 0)))
+			case (uint)ChunkId::FMT:
 			{
-				WAVEFORMATEX waveFormat = { 0 };
-				waveFormat.wFormatTag = WAVE_FORMAT_PCM;
-				waveFormat.nChannels = 2;
-				waveFormat.nSamplesPerSec = samlesPerSecound;
-				waveFormat.wBitsPerSample = 16;
-				waveFormat.nBlockAlign = waveFormat.nChannels * waveFormat.wBitsPerSample / 8;
-				waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
+				Fmt* fmt = (Fmt*)it.getChunkData();
+				nChannels = fmt->nChannles;
 
-				if (SUCCEEDED(directSound->SetCooperativeLevel(windowHandle, DSSCL_PRIORITY)))
-				{
-					DSBUFFERDESC bufferDescription = { 0 };
-					bufferDescription.dwSize = sizeof(bufferDescription);
-					bufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
-
-					LPDIRECTSOUNDBUFFER primaryBuffer;
-					if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &primaryBuffer, 0)))
-					{
-						if (!SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
-							utilsLogBreak("unsucceeded call to setFormat");
-					}
-					else
-						utilsLogBreak("unsucceeded call to createSoundBuffer for primaryBuffer!");
-				}
-				else
-					utilsLogBreak("unsucceeded call to setCooperativeLevel!");
-
-				DSBUFFERDESC bufferDescription = { 0 };
-				bufferDescription.dwSize = sizeof(bufferDescription);
-				bufferDescription.dwBufferBytes = bufferSize;
-				bufferDescription.lpwfxFormat = &waveFormat;
-
-				if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &secondaryBuffer, 0)))
-				{
-					secondaryBuffer->Play(0, 0, DSBPLAY_LOOPING);
-				}
-				else
-					utilsLogBreak("unsucceeded call to createSoundBuffer for secondaryBuffer!");
+				assert(fmt->wFormatTag == 1); //NOTE: Only PCM music!
+				assert(fmt->nSamplesPerSecond == 48000);
+				assert(fmt->wBitsPerSample == 16);
+				assert(fmt->nBlockAlign == (sizeof(short)*fmt->nChannles));
+				break;
 			}
-			else
-				utilsLogBreak("unsucceeded call to DirectSoundCreate!");
+			case (uint)ChunkId::DATA:
+			{
+				sampleData = (short*)it.getChunkData();
+				sampleDataSize = it.getChunkDataSize();
+				break;
+			}
 		}
-		else
-			utilsLogBreak("DirectSoundCreate could not be called!");
+	}
+
+	assert(nChannels && sampleData);
+
+	nSamples = sampleDataSize / (nChannels * sizeof(short));
+
+	//TODO: Make 2 channel loading!
+	nChannels = 1;
+
+	if (nChannels == 1)
+	{
+		samples[0] = sampleData;
+		samples[1] = nullptr;
+	}
+	else if (nChannels == 2)
+	{
+		//TOOD: Make this!
+		InvalidCodePath;
 	}
 	else
-		utilsLogBreak("dsound.dll not found!");
+		utilsLogBreak("Invalid channel count!");
 }
 
-void eg::Sound::outputTest()
+eg::Sound::RiffIt::RiffIt(void * at, void* stop) : at(reinterpret_cast<uchar*>(at)), stop(reinterpret_cast<uchar*>(stop))
 {
-	DWORD writeCursor, playCursor;
+}
 
-	if (SUCCEEDED(secondaryBuffer->GetCurrentPosition(&playCursor, &writeCursor)))
-	{
-		VOID* region0;
-		DWORD region0Size;
-		VOID* region1;
-		DWORD region1Size;
+eg::Sound::RiffIt::operator bool() const
+{
+	return this->at < this->stop;
+}
 
-		DWORD byteToLock = sampleIndex * bytesPerSample % bufferSize;
-		DWORD bytesToWrite = 0;
-		if (byteToLock > playCursor)
-		{
-			bytesToWrite = bufferSize - byteToLock + playCursor;
-		}
-		else
-		{
-			bytesToWrite = playCursor - byteToLock;
-		}
+eg::Sound::RiffIt& eg::Sound::RiffIt::operator++()
+{
+	Chunk* chunk = (Chunk*)at;
+	uint size = chunk->size;
+	if (size % 2 != 0)
+		++size;
+	at += sizeof(Chunk) + size;
+	return *this;
+}
 
-		if (SUCCEEDED(secondaryBuffer->Lock(byteToLock, bytesToWrite, &region0, &region0Size, &region1, &region1Size, 0)))
-		{
-			short* sampleOutput = (short*)region0;
-			int region0SampleCount = region0Size / bytesPerSample;
-			for (int i = 0; i < region0SampleCount; ++i, ++sampleIndex)
-			{
-				float t = 2.0f * (float)M_PI * (float)sampleIndex / (float)wavePeriod;
-				short sampleValue = (short)(sinf(t) * volume);
+uint eg::Sound::RiffIt::getChunkDataSize() const
+{
+	Chunk* chunk = (Chunk*)at;
+	return chunk->size;
+}
 
-				*sampleOutput++ = sampleValue;
-				*sampleOutput++ = sampleValue;
-			}
+void * eg::Sound::RiffIt::getChunkData() const
+{
+	return at + sizeof(Chunk);
+}
 
-			sampleOutput = (short*)region1;
-			int region1SampleCount = region1Size / bytesPerSample;
-			for (int i = 0; i < region1SampleCount; ++i, ++sampleIndex)
-			{
-				float t = 2.0f * (float)M_PI * (float)sampleIndex / (float)wavePeriod;
-				short sampleValue = (short)(sinf(t) * volume);
-
-				*sampleOutput++ = sampleValue;
-				*sampleOutput++ = sampleValue;
-			}
-
-			if (!SUCCEEDED(secondaryBuffer->Unlock(region0, region0Size, region1, region1Size)))
-				utilsLogBreak("unlock failed!");
-		}
-		else
-		{
-			//NOTE / TODO: lock sometimes failes!!
-			utilsLog("lock failed!");
-		}
-	}
-	else
-		utilsLogBreak("getCurrentPos failed!");
+uint eg::Sound::RiffIt::getType() const
+{
+	Chunk* chunk = (Chunk*)at;
+	return chunk->id;
 }

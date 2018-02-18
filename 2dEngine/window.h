@@ -5,7 +5,7 @@
 #include "Clock.h"
 #include <iostream>
 #include "Graphics2d.h"
-#include "Sound.h"
+#include "Audio.h"
 
 namespace eg
 {
@@ -82,7 +82,7 @@ namespace eg
 		Clock clock;
 		bool sleepIsGranulary = false;
 		Graphics2d gfx;
-		Sound snd;
+		Audio snd;
 	public:
 		Keyboard keyboard;
 		Mouse mouse;
@@ -95,7 +95,7 @@ namespace eg
 		void processMessages();
 		void limitFrames();
 		Graphics2d& getGfx() const;
-		Sound& getSnd() const;
+		Audio& getAudio() const;
 	private:
 		void ToggleFullscreen();
 		static LRESULT CALLBACK WindowProcInit(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

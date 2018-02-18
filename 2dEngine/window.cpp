@@ -79,13 +79,9 @@ namespace eg
 		}
 		case WM_PAINT:
 		{
-			InvalidCodePath;
+			window->gfx.render();
 			break;
 		}
-		/*case WM_ERASEBKGND:
-		{
-			break;
-		}*/
 		default:
 		{
 			result = DefWindowProcA(hwnd, uMsg, wParam, lParam);
@@ -123,7 +119,7 @@ namespace eg
 
 			if (windowHandle)
 			{
-				snd = Sound(windowHandle);
+				snd = Audio(windowHandle);
 				clock = Clock(performanceCounertFrequency);
 				return;
 			}
@@ -257,9 +253,9 @@ namespace eg
 		return (Graphics2d&)gfx;
 	}
 
-	Sound & Window::getSnd() const
+	Audio & Window::getAudio() const
 	{
-		return (Sound&)snd;
+		return (Audio&)snd;
 	}
 
 	void Window::ToggleFullscreen()
