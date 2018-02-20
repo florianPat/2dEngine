@@ -1,25 +1,29 @@
 #pragma once
 
-#include <dsound.h>
+#include "Sound.h"
 
 namespace eg
 {
 	class Audio
 	{
-		friend class Window;
-	private:
-		LPDIRECTSOUNDBUFFER secondaryBuffer = nullptr;
-		int bytesPerSample = sizeof(short) * 2;
-		int samplesPerSecound;
-		uint sampleIndex = 0;
-		int hz = 256;
-		int wavePeriod;
-		int bufferSize;
-		short volume = 3000;
-	private:
-		Audio() = default;
-		Audio(HWND windowHandle, int samlesPerSecound = 48000, int bufferSize = 48000 * sizeof(short) * 2);
+		friend class SoundSystem;
 	public:
-		void outputTest();
+		enum class PlayDur
+		{
+			ONCE = 1,
+			LOOPED = 2
+		};
+	private:
+		const Sound& sound;
+		long long playPos = 0;
+		const std::vector<std::vector<short>>& samples;
+		float volume = 1.0f;
+		const int nSamples;
+	public:
+		PlayDur playDur;
+	public:
+		Audio(const Sound& sound, PlayDur playDur);
+		void setVolume(float volume);
+		float getVolume() const;
 	};
 }

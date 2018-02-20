@@ -58,10 +58,12 @@ namespace eg
 			uint getChunkDataSize() const;
 		};
 	private:
-		std::vector<short> samples[2];
+		std::vector<std::vector<short>> samples;
 		int nChannels = 0;
 		int nSamples = 0;
 	public:
 		Sound(const std::string& filename);
+		const std::vector<std::vector<short>>& getSamples() const;
+		const int getNSamples() const;
 	};
 }

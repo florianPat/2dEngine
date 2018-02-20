@@ -128,19 +128,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Audio.cpp" />
     <ClCompile Include="Circle.cpp" />
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="Graphics2d.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ORect.cpp" />
     <ClCompile Include="RenderTexture.cpp" />
-    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="SoundSystem.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Audio.h" />
     <ClInclude Include="Circle.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="Color.h" />
@@ -149,7 +151,7 @@
     <ClInclude Include="ORect.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="RenderTexture.h" />
-    <ClInclude Include="Audio.h" />
+    <ClInclude Include="SoundSystem.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />

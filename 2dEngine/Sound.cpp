@@ -54,29 +54,41 @@ eg::Sound::Sound(const std::string & filename) : samples()
 
 	nSamples = sampleDataSize / (nChannels * sizeof(short));
 
+	nChannels = 1;
+
 	//TODO: Think about how to do that faster!!
 	if (nChannels == 1)
 	{
-		samples[0] = std::vector<short>(nSamples);
+		samples.push_back(std::vector<short>(nSamples));
 
 		for (int i = 0; i < nSamples; ++i)
 		{
-			samples[0].push_back(sampleData[i]);
+			samples[0][i] = sampleData[i];
 		}
 	}
 	else if (nChannels == 2)
 	{
-		samples[0] = std::vector<short>(nSamples / 2);
-		samples[1] = std::vector<short>(nSamples / 2);
+		samples.push_back(std::vector<short>(nSamples / 2));
+		samples.push_back(std::vector<short>(nSamples / 2));
 
 		for (int i = 0; i < nSamples;)
 		{
-			samples[0].push_back(sampleData[i++]);
-			samples[1].push_back(sampleData[i++]);
+			samples[0][i] = sampleData[i++];
+			samples[1][i] = sampleData[i++];
 		}
 	}
 	else
 		utilsLogBreak("Invalid channel count!");
+}
+
+const std::vector<std::vector<short>>& eg::Sound::getSamples() const
+{
+	return samples;
+}
+
+const int eg::Sound::getNSamples() const
+{
+	return nSamples;
 }
 
 eg::Sound::RiffIt::RiffIt(void * at, void* stop) : at(reinterpret_cast<uchar*>(at)), stop(reinterpret_cast<uchar*>(stop))

@@ -119,7 +119,7 @@ namespace eg
 
 			if (windowHandle)
 			{
-				snd = Audio(windowHandle);
+				snd = SoundSystem(windowHandle);
 				clock = Clock(performanceCounertFrequency);
 				return;
 			}
@@ -253,9 +253,9 @@ namespace eg
 		return (Graphics2d&)gfx;
 	}
 
-	Audio & Window::getAudio() const
+	SoundSystem & Window::getSndSys() const
 	{
-		return (Audio&)snd;
+		return (SoundSystem&)snd;
 	}
 
 	void Window::ToggleFullscreen()
