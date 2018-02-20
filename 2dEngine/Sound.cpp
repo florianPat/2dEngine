@@ -2,7 +2,7 @@
 #include <fstream>
 #include <memory>
 
-eg::Sound::Sound(const std::string & filename)
+eg::Sound::Sound(const std::string & filename) : samples()
 {
 	std::ifstream file(filename, std::ifstream::binary);
 
@@ -50,22 +50,30 @@ eg::Sound::Sound(const std::string & filename)
 		}
 	}
 
-	assert(nChannels && sampleData);
+	assert(nChannels && sampleData && sampleDataSize);
 
 	nSamples = sampleDataSize / (nChannels * sizeof(short));
 
-	//TODO: Make 2 channel loading!
-	nChannels = 1;
-
+	//TODO: Think about how to do that faster!!
 	if (nChannels == 1)
 	{
-		samples[0] = sampleData;
-		samples[1] = nullptr;
+		samples[0] = std::vector<short>(nSamples);
+
+		for (int i = 0; i < nSamples; ++i)
+		{
+			samples[0].push_back(sampleData[i]);
+		}
 	}
 	else if (nChannels == 2)
 	{
-		//TOOD: Make this!
-		InvalidCodePath;
+		samples[0] = std::vector<short>(nSamples / 2);
+		samples[1] = std::vector<short>(nSamples / 2);
+
+		for (int i = 0; i < nSamples;)
+		{
+			samples[0].push_back(sampleData[i++]);
+			samples[1].push_back(sampleData[i++]);
+		}
 	}
 	else
 		utilsLogBreak("Invalid channel count!");

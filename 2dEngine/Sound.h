@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace eg
 {
 	class Sound
@@ -55,9 +57,8 @@ namespace eg
 			uint getType() const;
 			uint getChunkDataSize() const;
 		};
-
 	private:
-		short* samples[2];
+		std::vector<short> samples[2];
 		int nChannels = 0;
 		int nSamples = 0;
 	public:
