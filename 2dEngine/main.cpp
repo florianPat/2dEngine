@@ -19,11 +19,19 @@ int main()
 	eg::Audio audio(sound, eg::Audio::PlayDur::LOOPED);
 	soundSystem.play(&audio);
 
+	float seconds = 0.0f;
+
 	while (window.isOpen())
 	{
 		window.processMessages();
 
 		gfx.clear();
+
+		seconds += 1 / 500.0f;
+		float volume = lerp(0.0f, 1.0f, seconds);
+		if (volume > 1.0f)
+			volume = 1.0f;
+		audio.setVolume(volume);
 
 		gfx.render();
 
