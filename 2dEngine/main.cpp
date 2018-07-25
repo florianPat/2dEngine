@@ -8,6 +8,7 @@
 #include "SoundSystem.h"
 #include "Sound.h"
 #include "Audio.h"
+#include "Stars3D.h"
 
 int main()
 {
@@ -15,11 +16,9 @@ int main()
 	eg::Graphics2d& gfx = window.getGfx();
 	eg::SoundSystem soundSystem = window.getSndSys();
 
-	eg::Sound sound("AllStars.wav");
-	eg::Audio audio(sound, eg::Audio::PlayDur::LOOPED);
-	soundSystem.play(&audio);
-
 	float seconds = 0.0f;
+
+	Stars3D stars(4096, 64.0f, 5.0f);
 
 	while (window.isOpen())
 	{
@@ -27,11 +26,7 @@ int main()
 
 		gfx.clear();
 
-		seconds += 1 / 500.0f;
-		float volume = lerp(0.0f, 1.0f, seconds);
-		if (volume > 1.0f)
-			volume = 1.0f;
-		audio.setVolume(volume);
+		stars.updateAndRender(gfx, 1/60.0f);
 
 		gfx.render();
 

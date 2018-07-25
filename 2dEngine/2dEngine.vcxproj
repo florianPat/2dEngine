@@ -138,6 +138,7 @@
     <ClCompile Include="SoundSystem.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="Stars3D.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
@@ -154,6 +155,7 @@
     <ClInclude Include="SoundSystem.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="Stars3D.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Vec2.h" />
     <ClInclude Include="window.h" />
