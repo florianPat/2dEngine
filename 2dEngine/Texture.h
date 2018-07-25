@@ -13,6 +13,10 @@ namespace eg
 	protected:
 		int leastSignificantSetBit(int bitfield);
 		Texture() = default;
+	private:
+		void loadBmp(const std::string& filename);
+		void loadPng(const std::string& filename);
+		void swapEndian(uint& value);
 	public:
 		Texture(const std::string& filename);
 		Texture(const Texture& other);

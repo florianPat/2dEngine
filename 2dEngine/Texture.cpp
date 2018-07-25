@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <fstream>
 #include <Windows.h>
+#include "PngLoadStructs.h"
 
 namespace eg
 {
@@ -15,7 +16,7 @@ namespace eg
 		return result;
 	}
 
-	Texture::Texture(const std::string & filename)
+	void Texture::loadBmp(const std::string & filename)
 	{
 		std::ifstream file(filename, std::ios::binary);
 
@@ -145,8 +146,73 @@ namespace eg
 		}
 		else if (bmInfoHeader.biCompression == BI_JPEG || bmInfoHeader.biCompression == BI_PNG)
 		{
-			//TODO: Make this!
 			assert(!"InvalidCodePath");
+		}
+	}
+
+	void Texture::loadPng(const std::string & filename)
+	{
+		std::ifstream file(filename, std::ios::binary);
+
+		assert(file);
+
+		PngLoad::FileHeader fileHeader = {};
+		file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
+
+		while (!file.eof())
+		{
+			PngLoad::ChunkHeader chunkHeader = {};
+			file.read(reinterpret_cast<char*>(&chunkHeader), sizeof(chunkHeader));
+
+			//NOTE: Is needed because png-files are in not our endienness
+			swapEndian(chunkHeader.size);
+			char* chunkData = new char[chunkHeader.size];
+			file.read(reinterpret_cast<char*>(&chunkData), chunkHeader.size);
+
+			ChunkFooter chunkFooter;
+			file.read(reinterpret_cast<char*>(&chunkFooter), sizeof(chunkFooter));
+
+			switch (chunkHeader.type)
+			{
+				case FOURCC("IHDR"):
+				{
+					std::cout << "Beginning!!" << '\n';
+				}
+			}
+		}
+	}
+
+	void Texture::swapEndian(uint & value)
+	{
+#if 0
+		uint v0 = value & 0xFF;
+		uint v1 = (value >> 8) & 0xFF;
+		uint v2 = (value >> 16) & 0xFF;
+		uint v3 = (value >> 24) & 0xFF;
+
+		value = ((v3) | (v2 << 8) | (v1 << 16) | (v0 << 24));
+#else
+		uint v = value;
+		value = ((v << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00) | (v >> 24));
+#endif
+	}
+
+	Texture::Texture(const std::string & filename)
+	{
+		std::string extension = filename;
+		extension = extension.erase(extension.find('.'));
+
+		if (extension == "bmp")
+		{
+			loadBmp(filename);
+		}
+		else if (extension == "png")
+		{
+			loadPng(filename);
+		}
+		else
+		{
+			assert(!"InvalidCodePath!");
 		}
 	}
 

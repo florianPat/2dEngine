@@ -149,6 +149,7 @@
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="Graphics2d.h" />
     <ClInclude Include="ORect.h" />
+    <ClInclude Include="PngLoadStructs.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="RenderTexture.h" />
     <ClInclude Include="SoundSystem.h" />
