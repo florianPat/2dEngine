@@ -114,7 +114,7 @@ namespace eg
 	void Graphics2d::draw(FloatCircle & circle)
 	{
 		int diameter = 2 * (int)circle.radius;
-		Vei2 circleCenter((int)circle.center.x, (int)circle.center.y);
+		Vector2i circleCenter((int)circle.center.x, (int)circle.center.y);
 		int radiusSq = (int)circle.radius * (int)circle.radius;
 		RectI boundingRect({ (int)circle.center.x - (int)circle.radius, (int)circle.center.y - (int)circle.radius }, diameter, diameter);
 
@@ -130,8 +130,8 @@ namespace eg
 		{
 			for (int x = boundingRect.left; x <= boundingRect.right; ++x)
 			{
-				Vei2 point(x, y);
-				Vei2 lengthVec(circleCenter - point);
+				Vector2i point(x, y);
+				Vector2i lengthVec(circleCenter - point);
 				if (lengthVec.getLenghtSq() <= radiusSq)
 				{
 					putPixel(point.x, point.y, circle.color);
@@ -144,21 +144,21 @@ namespace eg
 	{
 		int clipX = 0, clipY = 0, clipWidth = 0, clipHeight = 0;
 
-		Vec2f xAxis = { cosf(sprite.rotation), sinf(sprite.rotation) };
+		Vector2f xAxis = { cosf(sprite.rotation), sinf(sprite.rotation) };
 		xAxis.normalize();
 		xAxis *= (float)sprite.texture.getWidth() * sprite.scale;
-		Vec2f yAxis = { (-sinf(sprite.rotation)), cosf(sprite.rotation) };
+		Vector2f yAxis = { (-sinf(sprite.rotation)), cosf(sprite.rotation) };
 		yAxis.normalize();
 		yAxis *= (float)sprite.texture.getHeight() * sprite.scale;
 
-		Vec2f points[4] = { {sprite.pos}, {sprite.pos.x + sprite.texture.getWidth(), sprite.pos.y}, 
+		Vector2f points[4] = { {sprite.pos}, {sprite.pos.x + sprite.texture.getWidth(), sprite.pos.y}, 
 							{sprite.pos.x, sprite.pos.y + sprite.texture.getHeight()}, {sprite.pos.x + sprite.texture.getWidth(), sprite.pos.y + sprite.texture.getHeight()} };
 
-		Vec2f origin = sprite.pos + sprite.origin;
+		Vector2f origin = sprite.pos + sprite.origin;
 
 		for (int i = 0; i < 4; ++i)
 		{
-			points[i] = Vec2f(sprite.pos + xAxis * (points[i].x - origin.x) + yAxis * (points[i].y - origin.y));
+			points[i] = Vector2f(sprite.pos + xAxis * (points[i].x - origin.x) + yAxis * (points[i].y - origin.y));
 		}
 
 		RectF boundingRect(min(min(points[0].x, points[1].x), min(points[2].x, points[3].x)),
@@ -179,7 +179,7 @@ namespace eg
 		{
 			for (int x = (int)boundingRect.left; x < (int)boundingRect.right; ++x)
 			{
-				Vec2f testVec((float)x, (float)y);
+				Vector2f testVec((float)x, (float)y);
 
 				float edge1 = -yAxis * (testVec - sprite.pos);
 				float edge2 = xAxis * (testVec - (sprite.pos + xAxis));
@@ -189,7 +189,7 @@ namespace eg
 				if (edge1 <= 0 && edge2 <= 0 &&
 					edge3 <= 0 && edge4 <= 0)
 				{
-					Vec2f point = testVec - sprite.pos;
+					Vector2f point = testVec - sprite.pos;
 					float u = (point * xAxis) / xAxis.getLenghtSq();
 					float v = (point * yAxis) / yAxis.getLenghtSq();
 
@@ -231,8 +231,8 @@ namespace eg
 
 	void Graphics2d::draw(const ORectF & oRect)
 	{
-		Vec2f points[4];
-		Vec2f axis[2];
+		Vector2f points[4];
+		Vector2f axis[2];
 		oRect.getPointsAxis(points, axis);
 
 		RectF boundingRect(min(min(points[0].x, points[1].x), min(points[2].x, points[3].x)), 
@@ -253,7 +253,7 @@ namespace eg
 		{
 			for (int x = (int)boundingRect.left; x < (int)boundingRect.right; ++x)
 			{
-				Vec2f testVec((float)x, (float)y);
+				Vector2f testVec((float)x, (float)y);
 
 				float edge1 = -axis[1] * (testVec - oRect.pos);
 				float edge2 = axis[0] * (testVec - (oRect.pos + (oRect.xAxis * oRect.width)));

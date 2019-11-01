@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Windows.h>
-#include "Vec2.h"
+#include "Vector2.h"
 #include "Rect.h"
 #include "Circle.h"
 #include "Sprite.h"
@@ -18,7 +18,9 @@ namespace eg
 		BITMAPINFO bitmapInfo = {};
 		uint32_t* backBuffer;
 		uint32_t bytesPerPixel = 4;
-		uint32_t width, height;
+	public:
+		const uint32_t width, height;
+	private:
 		uint32_t pitch;
 	private:
 		Graphics2d(HWND& windowHandle, int width, int height);

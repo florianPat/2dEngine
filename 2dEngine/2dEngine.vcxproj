@@ -132,6 +132,7 @@
     <ClCompile Include="Circle.cpp" />
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="Graphics2d.cpp" />
+    <ClCompile Include="Graphics3d.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ORect.cpp" />
     <ClCompile Include="RenderTexture.cpp" />
@@ -140,6 +141,7 @@
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Stars3D.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +151,8 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="Graphics2d.h" />
+    <ClInclude Include="Graphics3d.h" />
+    <ClInclude Include="Mat4x4.h" />
     <ClInclude Include="ORect.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="RenderTexture.h" />
@@ -157,7 +161,9 @@
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Stars3D.h" />
     <ClInclude Include="Texture.h" />
-    <ClInclude Include="Vec2.h" />
+    <ClInclude Include="Utils.h" />
+    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Vector3.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

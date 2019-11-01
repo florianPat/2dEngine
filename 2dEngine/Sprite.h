@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vec2.h"
+#include "Vector2.h"
 #include "Texture.h"
 #include "Color.h"
 #include "Rect.h"
@@ -11,9 +11,9 @@ namespace eg
 	{
 		Texture& texture;
 		Color color = Colors::White;
-		Vec2f pos = { 0.0f, 0.0f };
+		Vector2f pos = { 0.0f, 0.0f };
 		RectI textureRect = { 0, 0, 0, 0 };
-		Vec2f origin = { 0.0f, 0.0f };
+		Vector2f origin = { 0.0f, 0.0f };
 		float rotation = 0.0f;
 		float scale = 1.0f;
 	public:
