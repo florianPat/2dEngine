@@ -16,10 +16,10 @@ int main()
 	eg::Window window(900, 600, "Title", 1/60.0f);
 	eg::Graphics2d& gfx = window.getGfx();
 	eg::SoundSystem soundSystem = window.getSndSys();
-	
+
 	eg::Object obj;
 	obj.numPolys = 1;
-	
+
 	eg::Polygon* poly = &obj.polys[0];
 	for (int i = 0; i < 3; ++i)
 	{
@@ -31,7 +31,7 @@ int main()
 	obj.verticesLocal[0] = { 0.0f, 200.0f, 0.0f };
 	obj.verticesLocal[1] = { 200.0f, 200.0f, 0.0f };
 	obj.verticesLocal[2] = { 0.0f, 0.0f, 0.0f };
-	
+
 	eg::scaleObj(&obj, 2.0f, 2.0f, 2.0f);
 
 	while (window.isOpen())
@@ -39,7 +39,7 @@ int main()
 		window.processMessages();
 
 		gfx.clear();
-		
+
 		//transform to world space
 		eg::rotateObj(&obj, 0.0f, 0.0f, 0.0f);
 		obj.worldPos = { 0.0f, 0.0f, 1.0f };
