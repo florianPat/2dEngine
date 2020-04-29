@@ -10,7 +10,7 @@ namespace eg
 	struct Mat4x4
 	{
 		//					column			row
-		//NOTE: Column major. 0    *   4  +   0
+		//NOTE: Column major. 0    *   4  +   0 and therefore pre multiplication or post multiplication with transpose
 		float matrix[4 * 4] = { 0 };
 	public:
 		Mat4x4() = default;
@@ -194,6 +194,38 @@ namespace eg
 		static Mat4x4 rotateZ(float rot)
 		{
 			return rotate(rot);
+		}
+
+		static Mat4x4 rot(const Vector3f& axis, float angle)
+		{
+			Mat4x4 result = identity();
+
+			/*
+			Vector3f v;
+			Vector3f proj = v.proj(axis);
+
+			Vector3f perp = v.perp(axis);
+			Vector3f w = v.crossProduct(perp);
+
+			Vector3f rotationPerp = perp * cosf(angle) + w * sinf(angle);
+			Vector3f rotation = proj + rotationPerp;
+
+			After multipling out and rearranging and creating a matrix based on that:
+			*/
+			float cosA = cosf(utils::degreesToRadians(angle));
+			float sinA = cosf(utils::degreesToRadians(angle));
+
+			result.matrix[0 * 4 + 0] = cosA + (1 - cosA) * (axis.x * axis.x);
+			result.matrix[0 * 4 + 1] = (1 - cosA) * (axis.y * axis.x) + sinA * axis.z;
+			result.matrix[0 * 4 + 2] = (1 - cosA) * (axis.z * axis.x) + sinA * (-axis.y);
+			result.matrix[1 * 4 + 0] = (1 - cosA) * (axis.x * axis.y) + sinA * (-axis.z);
+			result.matrix[1 * 4 + 1] = cosA + (1 - cosA) * (axis.y * axis.y);
+			result.matrix[1 * 4 + 2] = (1 - cosA) * (axis.z * axis.y) + sinA * axis.x;
+			result.matrix[2 * 4 + 0] = (1 - cosA) * (axis.x * axis.z) + sinA * axis.y;
+			result.matrix[2 * 4 + 1] = (1 - cosA) * (axis.y * axis.z) + sinA * (-axis.x);
+			result.matrix[2 * 4 + 2] = cosA + (1 - cosA) * (axis.z * axis.z);
+
+			return result;
 		}
 
 		static Mat4x4 orthoProj(float nearPlane, float farPlane, float left, float bottom, float right, float top)
