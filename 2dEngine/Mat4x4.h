@@ -74,6 +74,40 @@ namespace eg
 			return result;
 		}
 
+		void transpose()
+		{
+			float temp = matrix[0 * 4 + 1];
+			matrix[0 * 4 + 1] = matrix[1 * 4 + 0];
+			matrix[1 * 4 + 0] = temp;
+
+			temp = matrix[0 * 4 + 2];
+			matrix[0 * 4 + 2] = matrix[2 * 4 + 0];
+			matrix[2 * 4 + 0] = temp;
+
+			temp = matrix[0 * 4 + 3];
+			matrix[0 * 4 + 3] = matrix[3 * 4 + 0];
+			matrix[3 * 4 + 0] = temp;
+
+			float temp = matrix[1 * 4 + 2];
+			matrix[1 * 4 + 2] = matrix[2 * 4 + 1];
+			matrix[2 * 4 + 1] = temp;
+
+			float temp = matrix[1 * 4 + 3];
+			matrix[1 * 4 + 3] = matrix[3 * 4 + 1];
+			matrix[3 * 4 + 1] = temp;
+
+			float temp = matrix[2 * 4 + 3];
+			matrix[2 * 4 + 3] = matrix[3 * 4 + 2];
+			matrix[3 * 4 + 2] = temp;
+		}
+
+		Mat4x4 getTranspose() const
+		{
+			Mat4x4 result = *this;
+			result.transpose();
+			return result;
+		}
+
 		static Mat4x4 identity()
 		{
 			Mat4x4 result;
