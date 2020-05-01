@@ -71,7 +71,7 @@ namespace eg
 			T length = getLenght();
 			x /= length;
 			y /= length;
-			z /= lenght;
+			z /= length;
 			return *this;
 		}
 		Vector3 getNormalized() const

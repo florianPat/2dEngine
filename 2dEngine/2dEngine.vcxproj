@@ -144,7 +144,7 @@
     <ClCompile Include="Stars3D.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="window.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio.h" />
@@ -168,7 +168,7 @@
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />
-    <ClInclude Include="window.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
