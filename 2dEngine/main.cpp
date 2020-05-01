@@ -8,14 +8,14 @@
 #include "SoundSystem.h"
 #include "Sound.h"
 #include "Audio.h"
+#include "Graphics3d.h"
+#include <random>
 
 int main()
 {
 	eg::Window window(900, 600, "Title", 1/60.0f);
 	eg::Graphics2d& gfx = window.getGfx();
 	eg::SoundSystem soundSystem = window.getSndSys();
-
-	float seconds = 0.0f;
 
 	while (window.isOpen())
 	{
@@ -29,26 +29,6 @@ int main()
 
 		window.limitFrames();
 	}
-	/*
-	eg::Game game(window, "LevelName.tmx");
-
-	{
-	while(window.isOpen())
-	{
-	eg::Level currentLevel(levelName);
-
-	std::string nextLevel = currentLevel.Go();
-
-	while(nextLevel != "")
-	std::string nextLevel = currentLevel.Go();
-	else
-	{
-	window.close();
-	break;
-	}
-	}
-	}
-	*/
 
 	return 0;
 }

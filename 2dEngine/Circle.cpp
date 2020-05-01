@@ -1,7 +1,7 @@
 #include "Circle.h"
 #include <math.h>
 
-eg::FloatCircle::FloatCircle(const Vec2f & center, float radius, Color c) : center(center), radius(radius), color(c)
+eg::FloatCircle::FloatCircle(const Vector2f & center, float radius, Color c) : center(center), radius(radius), color(c)
 {
 }
 
@@ -11,7 +11,7 @@ eg::FloatCircle::FloatCircle(float centerX, float centerY, float radius, Color c
 
 bool eg::FloatCircle::intersects(const FloatCircle & other) const
 {
-	Vec2f vec = center - other.center;
+	Vector2f vec = center - other.center;
 	if (sqrtf(vec.x * vec.x + vec.y * vec.y) < radius + other.radius)
 		return true;
 	else

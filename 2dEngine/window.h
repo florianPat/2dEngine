@@ -22,7 +22,7 @@ namespace eg
 
 			uint32_t keyCodes = 0;
 		public:
-			inline bool32_t isKeyPressed(uint32_t keyCode) const;
+			bool32_t isKeyPressed(uint32_t keyCode) const;
 		private:
 			Keyboard() = default;
 			inline void setKey(uint32_t keyCode, bool32_t isDown)
@@ -44,7 +44,7 @@ namespace eg
 			friend class Window;
 
 			uint32_t buttons = 0;
-			//TODO: Make this a Vec2
+			//TODO: Make this a Vector2
 			uint16_t xPos, yPos;
 		public:
 			enum class Button
@@ -53,13 +53,13 @@ namespace eg
 				middle = MK_MBUTTON,
 				right = MK_RBUTTON
 			};
-			//Vec2 getPos() const;
+			//Vector2 getPos() const;
 			inline bool32_t isButtonPressed(Button mouseButton) const
 			{
 				return (buttons & (uint32_t)mouseButton);
 			}
 
-			//inline Vec2 getPos() const;
+			//inline Vector2 getPos() const;
 		private:
 			Mouse() = default;
 			inline void setButton(uint32_t wParam)
@@ -76,8 +76,8 @@ namespace eg
 		bool32_t running = true;
 		float framerateLimit;
 		bool32_t hasCursor;
-		WINDOWPLACEMENT previousWindowPos = { sizeof(previousWindowPos) };
 		uint32_t width, height;
+		WINDOWPLACEMENT previousWindowPos = { sizeof(previousWindowPos) };
 		LONGLONG performanceCounertFrequency;
 		Clock clock;
 		bool sleepIsGranulary = false;
