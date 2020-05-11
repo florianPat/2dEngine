@@ -1,9 +1,8 @@
 #pragma once
 
+#include "globalDefs.h"
 #include <Windows.h>
-#include <string>
 #include "Clock.h"
-#include <iostream>
 #include "Graphics2d.h"
 #include "SoundSystem.h"
 
@@ -71,12 +70,16 @@ namespace eg
 			//NOTE: Window accesses pos directly!
 		};
 	private:
+		static constexpr uint32_t WINDOWED_WINDOW_STYLE = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_VISIBLE | WS_MINIMIZEBOX;
+		static constexpr uint32_t FULLSCREEN_WINDOW_STYLE = WS_POPUP | WS_VISIBLE;
 		WNDCLASS windowClass = {};
 		HWND windowHandle;
 		bool32_t running = true;
+		bool32_t fullscreen = false;
 		float framerateLimit;
 		bool32_t hasCursor;
 		uint32_t width, height;
+		RECT windowRect;
 		WINDOWPLACEMENT previousWindowPos = { sizeof(previousWindowPos) };
 		LONGLONG performanceCounertFrequency;
 		Clock clock;

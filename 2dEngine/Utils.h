@@ -1,6 +1,8 @@
 #pragma once
 
+#include "globalDefs.h"
 #include <stdint.h>
+#include <stdio.h>
 
 #define arrayCount(x) sizeof(x) / sizeof(x[0])
 

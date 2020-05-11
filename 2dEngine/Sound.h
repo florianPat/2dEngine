@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "globalDefs.h"
 
 namespace eg
 {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "globalDefs.h"
+
 class Color
 {
 public:

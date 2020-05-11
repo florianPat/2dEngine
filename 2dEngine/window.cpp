@@ -109,13 +109,19 @@ namespace eg
 
 		windowClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
 		windowClass.hInstance = GetModuleHandle(0);
+		windowClass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
 		windowClass.hCursor = LoadCursorA(0, IDC_ARROW);
 		windowClass.lpszClassName = "WindowWindowClass";
 		windowClass.lpfnWndProc = &WindowProcInit;
 
 		if (RegisterClass(&windowClass))
 		{
-			windowHandle = CreateWindow(windowClass.lpszClassName, name.c_str(), WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, GetModuleHandle(0), this);
+			windowRect = { 0, 0, (LONG)width - 1, (LONG)height - 1 };
+			AdjustWindowRect(&windowRect, WINDOWED_WINDOW_STYLE, false);
+
+			windowHandle = CreateWindow(windowClass.lpszClassName, name.c_str(), WINDOWED_WINDOW_STYLE, CW_USEDEFAULT, CW_USEDEFAULT, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top, 0, 0, GetModuleHandle(0), this);
+
+			ShowWindow(windowHandle, SW_SHOW);
 
 			if (windowHandle)
 			{
@@ -260,31 +266,29 @@ namespace eg
 
 	void Window::ToggleFullscreen()
 	{
-		DWORD dwStyle = GetWindowLong(windowHandle, GWL_STYLE);
-		if (dwStyle & WS_OVERLAPPEDWINDOW)
+		if (fullscreen)
 		{
+			fullscreen = false;
+			SetWindowLong(windowHandle, GWL_STYLE, WINDOWED_WINDOW_STYLE);
+			SetWindowPlacement(windowHandle, &previousWindowPos);
+			SetWindowPos(windowHandle, HWND_TOP, 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
+				SWP_NOMOVE | SWP_FRAMECHANGED);
+		}
+		else
+		{
+			fullscreen = true;
 			MONITORINFO mi = { sizeof(mi) };
 			if (GetWindowPlacement(windowHandle, &previousWindowPos) &&
 				GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTOPRIMARY),
 					&mi))
 			{
-				SetWindowLong(windowHandle, GWL_STYLE,
-					dwStyle & ~WS_OVERLAPPEDWINDOW);
+				SetWindowLong(windowHandle, GWL_STYLE, FULLSCREEN_WINDOW_STYLE);
 				SetWindowPos(windowHandle, HWND_TOP,
 					mi.rcMonitor.left, mi.rcMonitor.top,
 					mi.rcMonitor.right - mi.rcMonitor.left,
 					mi.rcMonitor.bottom - mi.rcMonitor.top,
-					SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+					SWP_FRAMECHANGED);
 			}
-		}
-		else
-		{
-			SetWindowLong(windowHandle, GWL_STYLE,
-				dwStyle | WS_OVERLAPPEDWINDOW);
-			SetWindowPlacement(windowHandle, &previousWindowPos);
-			SetWindowPos(windowHandle, NULL, 0, 0, 0, 0,
-				SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
-				SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
 		}
 	}
 
