@@ -267,6 +267,147 @@ namespace eg
 		}
 	}
 
+	void Graphics2d::drawLine(Vector2i p0, Vector2i p1, Color color)
+	{
+		int32_t dx, dy, xInc, yInc, error = 0, x = p0.x, y = p0.y;
+
+		//compute horizontal and vertical deltas
+		dx = p1.x - p0.x;
+		dy = p1.y - p0.y;
+
+		//test which direction the line is going in i.e. slope angle
+		if (dx > 0)
+		{
+			xInc = 1;
+		}
+		else
+		{
+			xInc = -1;
+			dx = -dx; //need absolute value
+		}
+
+		if (dy > 0)
+		{
+			yInc = 1;
+		}
+		else
+		{
+			yInc = -1;
+			dy = -dy; //need absolute value of dy
+		}
+
+		//based on which delta is greater, we can draw the line
+		if (dx > dy)
+		{
+			for (int32_t i = 0; i <= dx; ++i)
+			{
+				putPixel(x, y, color);
+
+				//One understands it if one thinks about it graphicly!
+				//If dx = 2 and dy = 1, we need to go two in x, before we increment y, so that this gets created:
+				// xx
+				//   xx ...
+				//Because we go 2 in x (dx), 1 in y(dy); Thats the "pattern"
+				error += dy;
+
+				if (error > dx)
+				{
+					error -= dx;
+					y += yInc;
+				}
+
+				x += xInc;
+			}
+		}
+		else
+		{
+			for (int32_t i = 0; i <= dy; ++i)
+			{
+				putPixel(x, y, color);
+
+				error += dx;
+
+				if (error > 0)
+				{
+					error -= dy;
+
+					x += xInc;
+				}
+
+				y += yInc;
+			}
+		}
+	}
+
+	bool Graphics2d::clipLine(Vector2i& p0, Vector2i& p1)
+	{
+		Vector2f p0f = (Vector2f)p0;
+		Vector2f p1f = (Vector2f)p1;
+
+		float m = (p1f.y - p0f.y) / (p1f.x - p0f.x);
+
+		if (p0f.x < 0.0f)
+		{
+			p0f.y = m * (-p0f.x) + p0f.y;
+			if (p0f.y < 0.0f || p0f.y >= height)
+				return false;
+			p0f.x = 0.0f;
+		}
+		else if (p0f.x >= width)
+		{
+			p0f.y = m * ((width - 1) - p0f.x) + p0f.y;
+			if (p0f.y < 0.0f || p0f.y >= height)
+				return false;
+			p0f.x = width - 1.0f;
+		}
+
+		if (p1f.x < 0.0f)
+		{
+			p1f.y = m * (-p0f.x) + p0f.y;
+			p1f.x = 0.0f;
+		}
+		else if (p1f.x >= width)
+		{
+			p1f.y = m * ((width - 1) - p0f.x) + p0f.y;
+			p1f.x = width - 1.0f;
+		}
+
+		if (p0f.y < 0.0f)
+		{
+			p0f.x = (-p0f.y) / m + p0f.x;
+			if (p0f.x < 0.0f || p0f.x >= width)
+				return false;
+			p0f.y = 0.0f;
+		}
+		else if (p0f.y >= height)
+		{
+			p0f.x = ((height - 1) - p0f.y) / m + p0f.x;
+			if (p0f.x < 0.0f || p0f.x >= width)
+				return false;
+			p0f.y = height - 1.0f;
+		}
+
+		if (p1f.y < 0.0f)
+		{
+			p1f.x = (-p0f.y) / m + p0f.x;
+			if (p1f.x < 0.0f || p1f.x >= width)
+				return false;
+			p1f.y = 0.0f;
+		}
+		else if (p1f.y >= height)
+		{
+			p1f.x = ((height - 1) - p0f.y) / m + p0f.x;
+			if (p1f.x < 0.0f || p1f.x >= width)
+				return false;
+			p1f.y = height - 1.0f;
+		}
+
+		p0 = (Vector2i)p0f;
+		p1 = (Vector2i)p1f;
+
+		return true;
+	}
+
 	void Graphics2d::render()
 	{
 		HDC dc = GetDC(windowHandle);

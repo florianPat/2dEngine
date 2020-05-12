@@ -12,8 +12,6 @@ namespace eg
 {
 	class Graphics2d
 	{
-		friend class Window;
-
 		HWND& windowHandle;
 		BITMAPINFO bitmapInfo = {};
 		uint32_t* backBuffer;
@@ -23,9 +21,9 @@ namespace eg
 	private:
 		uint32_t pitch;
 	private:
-		Graphics2d(HWND& windowHandle, int width, int height);
 		void ClipRect(int& x, int& y);
 	public:
+		Graphics2d(HWND& windowHandle, int width, int height);
 		~Graphics2d();
 		Graphics2d(const Graphics2d&) = delete;
 		Graphics2d& operator=(const Graphics2d&) = delete;
@@ -37,6 +35,8 @@ namespace eg
 		void draw(FloatCircle& circle);
 		void draw(const Sprite& sprite);
 		void draw(const ORectF& oRect);
+		void drawLine(Vector2i p0, Vector2i p1, Color color);
+		bool clipLine(Vector2i& p0, Vector2i& p1);
 		void render();
 	};
 }

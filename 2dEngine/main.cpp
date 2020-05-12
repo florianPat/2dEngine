@@ -1,7 +1,3 @@
-//Force Include GlobalDefs.h
-
-//TODO: Eventully write your own string class (and other std stuff) yourself ;)
-
 #include "Window.h"
 #include "Graphics2d.h"
 #include "Color.h"
@@ -17,11 +13,18 @@ int main()
 	eg::Graphics2d& gfx = window.getGfx();
 	eg::SoundSystem soundSystem = window.getSndSys();
 
-	while (window.isOpen())
-	{
-		window.processMessages();
+	eg::Vector2i p0 = { 100, 100 };
 
+	while (window.processEvents())
+	{
 		gfx.clear();
+
+		gfx.drawLine(p0, window.getMouse().pos, Colors::White);
+
+		eg::Vector2i p2 = { -100, -100 };
+
+		if (gfx.clipLine(p2, p0))
+			gfx.drawLine(p2, p0, Colors::Cyan);
 
 		gfx.render();
 
