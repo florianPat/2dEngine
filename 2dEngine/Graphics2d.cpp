@@ -408,6 +408,18 @@ namespace eg
 		return true;
 	}
 
+	void Graphics2d::drawPolyline(std::vector<Vector2i> points, Color color)
+	{
+		for(uint32_t i = 0; i < points.size() - 1; ++i)
+		{
+			if (clipLine(points[i], points[i + 1]))
+				drawLine(points[i], points[i + 1], color);
+		}
+
+		if(clipLine(points[points.size() - 1], points[0]))
+			drawLine(points[points.size() - 1], points[0], color);
+	}
+
 	void Graphics2d::render()
 	{
 		HDC dc = GetDC(windowHandle);

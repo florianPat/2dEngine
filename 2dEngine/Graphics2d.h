@@ -7,6 +7,7 @@
 #include "Sprite.h"
 #include "Color.h"
 #include "ORect.h"
+#include <vector>
 
 namespace eg
 {
@@ -37,6 +38,7 @@ namespace eg
 		void draw(const ORectF& oRect);
 		void drawLine(Vector2i p0, Vector2i p1, Color color);
 		bool clipLine(Vector2i& p0, Vector2i& p1);
+		void drawPolyline(std::vector<Vector2i> points, Color color);
 		void render();
 	};
 }

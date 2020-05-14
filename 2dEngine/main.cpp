@@ -9,22 +9,41 @@
 
 int main()
 {
-	eg::Window window(900, 600, "Title", 1/60.0f);
+	const float dt = 1 / 60.0f;
+	eg::Window window(900, 600, "Title", dt);
 	eg::Graphics2d& gfx = window.getGfx();
 	eg::SoundSystem soundSystem = window.getSndSys();
 
-	eg::Vector2i p0 = { 100, 100 };
+	std::vector<eg::Vector2i> polygonStart = { {-150, 150}, {0, 50}, {150, 150}, {50, 0}, {150, -150}, {0, -50}, {-150, -150},
+		{-50, 0} };
+	float increment = 3.1415f / 6;
+	float angle = increment;
+	float scale = 1.0f;
 
 	while (window.processEvents())
 	{
 		gfx.clear();
 
-		gfx.drawLine(p0, window.getMouse().pos, Colors::White);
+		auto polygon = polygonStart;
 
-		eg::Vector2i p2 = { -100, -100 };
+		for (auto it = polygon.begin(); it != polygon.end(); ++it)
+		{
+			float x = it->x * scale;
+			float y = it->y * scale;
+			float tempX = (x * cosf(angle) + y * -sinf(angle));
+			y = (x * sinf(angle) + y * cosf(angle));
+			x = tempX;
+			x += gfx.width / 2;
+			y *= -1.0f;
+			y += gfx.height / 2;
+			it->x = (int32_t)x;
+			it->y = (int32_t)y;
+		}
 
-		if (gfx.clipLine(p2, p0))
-			gfx.drawLine(p2, p0, Colors::Cyan);
+		gfx.drawPolyline(polygon, Colors::Yellow);
+
+		angle += increment * dt;
+		scale = sinf(angle);
 
 		gfx.render();
 
