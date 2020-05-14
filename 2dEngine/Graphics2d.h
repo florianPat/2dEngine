@@ -23,6 +23,8 @@ namespace eg
 		uint32_t pitch;
 	private:
 		void ClipRect(int& x, int& y);
+		void drawFlatBottomTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color);
+		void drawFlatTopTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color);
 	public:
 		Graphics2d(HWND& windowHandle, int width, int height);
 		~Graphics2d();
@@ -36,9 +38,10 @@ namespace eg
 		void draw(FloatCircle& circle);
 		void draw(const Sprite& sprite);
 		void draw(const ORectF& oRect);
-		void drawLine(Vector2i p0, Vector2i p1, Color color);
+		void drawLine(const Vector2i& p0, const Vector2i& p1, Color color);
 		bool clipLine(Vector2i& p0, Vector2i& p1);
 		void drawPolyline(std::vector<Vector2i> points, Color color);
+		void drawTriangle(Vector2i p0, Vector2i p1, Vector2i p2, Color color);
 		void render();
 	};
 }

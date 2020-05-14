@@ -36,6 +36,39 @@ namespace eg
 			y = height - 1;
 	}
 
+	void Graphics2d::drawFlatBottomTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color)
+	{
+		float dyLeft = ((float)p1.x - p0.x) / (p1.y - p0.y);
+		float dyRight = ((float)p2.x - p0.x) / (p2.y - p0.y);
+
+		putPixel(p0.x, p0.y, color);
+		float x0 = (float)p0.x, x1 = (float)p0.x;
+		for (int i = p0.y + 1; i < p1.y; ++i)
+		{
+			x0 += dyLeft;
+			x1 += dyRight;
+			drawLine({ (int32_t)x0, i }, { (int32_t)x1, i }, color);
+		}
+		drawLine(p1, p2, color);
+	}
+
+	void Graphics2d::drawFlatTopTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color)
+	{
+		float dyLeft = ((float)p2.x - p0.x) / (p2.y - p0.y);
+		float dyRight = ((float)p2.x - p1.x) / (p2.y - p1.y);
+
+		drawLine(p0, p1, color);
+		float x0 = (float)p0.x, x1 = (float)p1.x;
+		for (int32_t i = p0.y + 1; i < p2.y; ++i)
+		{
+			x0 += dyLeft;
+			x1 += dyRight;
+
+			drawLine({ (int32_t)x0, i }, { (int32_t)x1, i }, color);
+		}
+		putPixel(p2.x, p2.y, color);
+	}
+
 	Graphics2d::~Graphics2d()
 	{
 		delete [] backBuffer;
@@ -267,7 +300,7 @@ namespace eg
 		}
 	}
 
-	void Graphics2d::drawLine(Vector2i p0, Vector2i p1, Color color)
+	void Graphics2d::drawLine(const Vector2i& p0, const Vector2i& p1, Color color)
 	{
 		int32_t dx, dy, xInc, yInc, error = 0, x = p0.x, y = p0.y;
 
@@ -418,6 +451,72 @@ namespace eg
 
 		if(clipLine(points[points.size() - 1], points[0]))
 			drawLine(points[points.size() - 1], points[0], color);
+	}
+
+	void Graphics2d::drawTriangle(Vector2i p0, Vector2i p1, Vector2i p2, Color color)
+	{
+		Vector2i temp;
+
+		if (p0.y > p2.y)
+		{
+			temp = p2;
+			p2 = p0;
+			p0 = temp;
+		}
+		if (p0.y > p1.y)
+		{
+			temp = p1;
+			p1 = p0;
+			p0 = temp;
+		}
+		if (p1.y > p2.y)
+		{
+			temp = p2;
+			p2 = p1;
+			p1 = temp;
+		}
+
+		if (p0.y == p1.y)
+		{
+			if (p0.x > p1.x)
+			{
+				temp = p1;
+				p1 = p0;
+				p0 = temp;
+			}
+
+			drawFlatTopTriangle(p0, p1, p2, color);
+		}
+		else if (p1.y == p2.y)
+		{
+			if (p1.x > p2.x)
+			{
+				temp = p2;
+				p2 = p1;
+				p1 = temp;
+			}
+
+			drawFlatBottomTriangle(p0, p1, p2, color);
+		}
+		else
+		{
+			if (p1.x > p0.x)
+			{
+				float dyLeft = ((float)p2.x - p0.x) / (p2.y - p0.y);
+				
+				Vector2i realP2 = { (int32_t)(dyLeft * (p1.y - p0.y) + p0.x), p1.y };
+				drawFlatBottomTriangle(p0, realP2, p1, color);
+				drawFlatTopTriangle(realP2, p1, p2, color);
+			}
+			else
+			{
+				float dyRight = ((float)p2.x - p0.x) / (p2.y - p0.y);
+
+				Vector2i realP2 = { (int32_t)(dyRight * (p1.y - p0.y) + p0.x), p1.y };
+				drawFlatBottomTriangle(p0, p1, realP2, color);
+				drawFlatTopTriangle(p1, realP2, p2, color);
+			}
+		}
 	}
 
 	void Graphics2d::render()
