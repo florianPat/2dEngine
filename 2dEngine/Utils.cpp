@@ -7,11 +7,6 @@ uint32_t utils::getGUID()
 	return counter++;
 }
 
-float utils::lerp(float v0, float v1, float t)
-{
-	return (1 - t) * v0 + t * v1;
-}
-
 float utils::degreesToRadians(float degree)
 {
 	float radians = PiOver180 * degree;
