@@ -28,7 +28,7 @@ namespace eg
 	{
 		Vector4f localCoords[3];
 		Vector4f transformedCoords[3];
-		Color color;
+		Color color = Colors::White;
 		ShadingMode shadingMode;
 		uint32_t state = State::ACTIVE;
 	};
@@ -52,6 +52,9 @@ namespace eg
 		void modelToWorldTranslation(TransformCase transformCase = TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS);
 		float computeMaxRadius() const;
 		void doZDivide();
+		void cullBackfaces(const Vector3f cameraWorldPos);
+		void clearFlags();
+		void drawWireframe(Graphics2d& gfx) const;
 	};
 
 	struct Camera

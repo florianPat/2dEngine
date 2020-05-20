@@ -146,6 +146,46 @@ namespace eg
 			}
 		}
 	}
+	void Object::cullBackfaces(const Vector3f cameraWorldPos)
+	{
+		Vector3f normal;
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			Vector3f v0 = polygons[i].transformedCoords[1] - polygons[i].transformedCoords[0];
+			Vector3f v1 = polygons[i].transformedCoords[2] - polygons[i].transformedCoords[0];
+			normal = v0.crossProduct(v1);
+
+			Vector3f polygonCameraDifference = polygons[i].transformedCoords[0] - cameraWorldPos;
+
+			if (normal.dotProduct(polygonCameraDifference) > 0.0f)
+			{
+				polygons[i].state |= State::BACKFACE;
+			}
+		}
+	}
+	void Object::clearFlags()
+	{
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			polygons[i].state = State::ACTIVE;
+		}
+	}
+	void Object::drawWireframe(Graphics2d& gfx) const
+	{
+		std::vector<eg::Vector2i> polyline;
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			if (polygons[i].state & eg::State::ACTIVE && !(polygons[i].state & eg::State::BACKFACE) &&
+				!(polygons[i].state & eg::State::CLIPPED))
+			{
+				polyline.push_back(polygons[i].transformedCoords[0]);
+				polyline.push_back(polygons[i].transformedCoords[1]);
+				polyline.push_back(polygons[i].transformedCoords[2]);
+				gfx.drawPolyline(polyline, polygons[i].color);
+				polyline.clear();
+			}
+		}
+	}
 	Camera::Camera(const Vector3f& worldPos, float nearClippingPlane, float farClippingPlane, float fov, float viewportWidth,
 		float viewportHeight)
 		:	worldPos(worldPos), direction(), target(), lookAt(), up(), right(), fov(fov),
