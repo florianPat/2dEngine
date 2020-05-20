@@ -81,6 +81,12 @@ eg::Quaternion eg::Quaternion::operator*(const Quaternion& rhs) const
 	return Quaternion(w * rhs.w - v.dotProduct(rhs.v), rhs.v * w + v * rhs.w + rhs.v.crossProduct(v));
 }
 
+eg::Quaternion& eg::Quaternion::operator*=(const Quaternion& rhs)
+{
+	*this = (*this) * rhs;
+	return *this;
+}
+
 float eg::Quaternion::dotProduct(const Quaternion& rhs) const
 {
 	return w * rhs.w + v.dotProduct(rhs.v);

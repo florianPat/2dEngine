@@ -2,9 +2,16 @@
 
 #include "Graphics3d.h"
 
-class RenderList
+namespace eg
 {
-	uint32_t nPolygons;
-	eg::Polygon* indexBuffer[64];
-	eg::Polygon vertexBuffer[128];
-};
+	struct RenderList
+	{
+		uint32_t nPolygons;
+		uint32_t nIndicies;
+		Polygon* indexBuffer[64];
+		Polygon vertexBuffer[128];
+
+		void transform(const Mat4x4& transform, TransformCase transformCase);
+		void translate(const Vector3f& worldPos, TransformCase transformCase = eg::TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS);
+	};
+}

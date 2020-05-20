@@ -28,6 +28,6 @@ namespace eg
 			uint32_t valueCount;
 		};
 
-		static Object load(const std::string& filename, const Vector3f& pos, const Quaternion& rot, const Vector3f& scl);
+		static Object load(const std::string& filename, const Vector3f& pos, const Vector3f& rot, const Vector3f& scl);
 	};
 }

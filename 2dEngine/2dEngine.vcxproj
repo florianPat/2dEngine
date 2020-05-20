@@ -85,6 +85,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -112,6 +113,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -142,10 +144,13 @@
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="Graphics2d.cpp" />
     <ClCompile Include="Graphics3d.cpp" />
+    <ClCompile Include="Line.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ORect.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlyLoader.cpp" />
     <ClCompile Include="Quaternion.cpp" />
+    <ClCompile Include="RenderList.cpp" />
     <ClCompile Include="RenderTexture.cpp" />
     <ClCompile Include="SoundSystem.cpp" />
     <ClCompile Include="Sound.cpp" />
@@ -164,8 +169,10 @@
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="Graphics2d.h" />
     <ClInclude Include="Graphics3d.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="Mat4x4.h" />
     <ClInclude Include="ORect.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="PlyLoader.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="PngLoadStructs.h" />
@@ -180,6 +187,7 @@
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Vector4.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

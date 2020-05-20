@@ -4,6 +4,8 @@
 #include "Vector2.h"
 #include "Vector3.h"
 #include "Quaternion.h"
+#include "Mat4x4.h"
+#include "Plane.h"
 
 namespace eg
 {
@@ -15,30 +17,76 @@ namespace eg
 		PHONG,
 	};
 
-	enum class State
+	enum State
 	{
-		VISIBLE,
+		ACTIVE = 1,
+		CLIPPED = 2,
+		BACKFACE = 4,
 	};
 
 	struct Polygon
 	{
-		eg::Vector3f localCoords[3];
-		eg::Vector3f worldCoords[3];
-		eg::Vector3f cameraCoords[3];
-		eg::Vector3f clipCoords[3];
-		eg::Vector2f screenCoords[3];
+		Vector4f localCoords[3];
+		Vector4f transformedCoords[3];
 		Color color;
 		ShadingMode shadingMode;
-		State state = State::VISIBLE;
+		uint32_t state = State::ACTIVE;
+	};
+
+	enum class TransformCase
+	{
+		LOCAL_COORDS_ONLY,
+		TRANSFORM_COORDS_ONLY,
+		LOCAL_COORDS_TO_TRANSFORM_COORDS,
 	};
 
 	struct Object
 	{
-		eg::Vector3f pos;
-		eg::Quaternion rot;
-		eg::Vector3f scl;
+		Vector3f worldPos;
+		Vector3f rot;
+		Vector3f scl;
+		Vector3f basis[3] = { {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f} };
 		uint32_t nPolygons;
+		Polygon polygons[265];
+		void transform(const Mat4x4& transform, TransformCase transformCase, bool transformBasis);
+		void modelToWorldTranslation(TransformCase transformCase = TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS);
+		float computeMaxRadius() const;
+		void doZDivide();
+	};
 
-		Polygon polygon[265];
+	struct Camera
+	{
+		Vector3f worldPos;
+		Vector3f direction;
+
+		Vector3f target;
+		Vector3f lookAt, up, right; // NOTE: z, y, x basis for new camera coord system
+
+		float fov;
+		static constexpr float viewplaneWidth = 2.0f;
+		static constexpr float viewplaneHeight = 2.0f;
+
+		float nearClippingPlane;
+		float farClippingPlane;
+		Plane rightClippingPlane;
+		Plane leftClippingPlane;
+		Plane topClippingPlane;
+		Plane bottomClippingPlane;
+
+		float viewportWidth;
+		float viewportHeight;
+		float aspectRatio;
+
+		Mat4x4 worldToCameraTransform;
+		Mat4x4 cameraToPerspectiveTransform;
+		Mat4x4 perspectiveToScreenTransform;
+	private:
+		Camera(const Vector3f& worldPos, float nearClippingPlane, float farClippingPlane, float fov, float viewportWidth,
+			float viewportHeight);
+	public:
+		Camera(const Vector3f& worldPos, const Vector3f& targetIn, float nearClippingPlane, float farClippingPlane,
+			float fov, float viewportWidth, float viewportHeight);
+		Camera(const Vector3f& worldPos, float nearClippingPlane, float
+			farClippingPlane, const Vector3f& directionIn, float fov, float viewportWidth, float viewportHeight);
 	};
 }

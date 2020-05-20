@@ -8,7 +8,7 @@ namespace eg
 	template<typename T>
 	struct Vector2
 	{
-		T x, y;
+		T x = 0, y = 0;
 		Vector2() = default;
 		Vector2(T x, T y) : x(x), y(y) {}
 		template <typename T2>

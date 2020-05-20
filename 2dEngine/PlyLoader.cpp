@@ -22,10 +22,10 @@
 
 namespace eg
 {
-	Object eg::PlyLoader::load(const std::string& filename, const Vector3f& pos, const Quaternion& rot, const Vector3f& scl)
+	Object eg::PlyLoader::load(const std::string& filename, const Vector3f& pos, const Vector3f& rot, const Vector3f& scl)
 	{
 		Object result;
-		result.pos = pos;
+		result.worldPos = pos;
 		result.rot = rot;
 		result.scl = scl;
 
@@ -115,7 +115,7 @@ namespace eg
 		}
 		std::getline(file, line);
 
-		std::vector<Vector3f> vertices;
+		std::vector<Vector4f> vertices;
 		std::vector<uint16_t> indicies;
 		indicies.reserve(result.nPolygons);
 
@@ -128,7 +128,7 @@ namespace eg
 					uint32_t j = 0;
 					for (; j < element.valueCount; ++j, std::getline(file, line))
 					{
-						Vector3f vertex;
+						Vector4f vertex;
 
 						for (uint32_t k = 0; k < element.properties.size(); ++k)
 						{
@@ -173,9 +173,9 @@ namespace eg
 
 		for (uint16_t i = 0; i < indicies.size();)
 		{
-			result.polygon[i++ / 3].localCoords[0] = vertices[indicies[i]];
-			result.polygon[i++ / 3].localCoords[1] = vertices[indicies[i]];
-			result.polygon[i++ / 3].localCoords[2] = vertices[indicies[i]];
+			result.polygons[i++ / 3].localCoords[0] = vertices[indicies[i]];
+			result.polygons[i++ / 3].localCoords[1] = vertices[indicies[i]];
+			result.polygons[i++ / 3].localCoords[2] = vertices[indicies[i]];
 		}
 
 		return result;

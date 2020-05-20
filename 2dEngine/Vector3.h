@@ -1,11 +1,13 @@
 #pragma once
 
+#include "globalDefs.h"
+
 namespace eg
 {
 	template <typename T>
 	struct Vector3
 	{
-		T x, y, z;
+		T x = 0, y = 0, z = 0;
 		Vector3() = default;
 		Vector3(T x, T y, T z) : x(x), y(y), z(z) {}
 		Vector3 operator+(const Vector3<T>& rhs) const
@@ -76,8 +78,8 @@ namespace eg
 		}
 		Vector3 getNormalized() const
 		{
-			T lenght = getLenght();
-			return Vector2(x / lenght, y / lenght, z / length);
+			T length = getLenght();
+			return Vector3(x / length, y / length, z / length);
 		}
 		T dotProduct(const Vector3& rhs) const
 		{
@@ -134,5 +136,5 @@ namespace eg
 	};
 
 	typedef Vector3<float> Vector3f;
-	typedef Vector3<int> Vector3i;
+	typedef Vector3<int32_t> Vector3i;
 }

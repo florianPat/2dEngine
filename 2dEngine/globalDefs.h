@@ -21,6 +21,12 @@ typedef uint8_t uchar;
 #define utilsLog(string) std::cerr << "Log: Function: " << __FUNCTION__ << ", Line: " << __LINE__ << ", Message: " << string << std::endl
 #define utilsLogBreak(string) { utilsLog(string); __debugbreak(); }
 
+#define arrayCount(x) sizeof(x) / sizeof(x[0])
+
+#define Kilobyte(x) x * 1024ll
+#define Megabyte(x) Kilobyte(x) * 1024ll
+#define Gigabyte(x) Megabyte(x) * 1024ll
+
 inline float lerp(float v0, float v1, float t)
 {
 	return (1 - t) * v0 + t * v1;

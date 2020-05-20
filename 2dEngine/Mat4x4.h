@@ -3,14 +3,14 @@
 #include "Vector2.h"
 #include "Utils.h"
 #include <math.h>
-#include "Vector3.h"
+#include "Vector4.h"
 
 namespace eg
 {
 	struct Mat4x4
 	{
 		//					column			row
-		//NOTE: Column major. 0    *   4  +   0 and therefore pre multiplication or post multiplication with transpose
+		//NOTE: Column major. 0    *   4  +   0 and column vectors, therefore post multiplication or pre multiplication with transpose
 		float matrix[4 * 4] = { 0 };
 	public:
 		Mat4x4() = default;
@@ -70,6 +70,30 @@ namespace eg
 			result.x = matrix[0 * 4 + 0] * rhs.x + matrix[1 * 4 + 0] * rhs.y + matrix[2 * 4 + 0] * rhs.z + matrix[3 * 4 + 0] * 1.0f;
 			result.y = matrix[0 * 4 + 1] * rhs.x + matrix[1 * 4 + 1] * rhs.y + matrix[2 * 4 + 1] * rhs.z + matrix[3 * 4 + 1] * 1.0f;
 			result.z = matrix[0 * 4 + 2] * rhs.x + matrix[1 * 4 + 2] * rhs.y + matrix[2 * 4 + 2] * rhs.z + matrix[3 * 4 + 2] * 1.0f;
+
+			return result;
+		}
+
+		inline Vector4f operator*(const Vector4f& rhs) const
+		{
+			Vector4f result;
+
+			result.x = getColumnVector(0).dotProduct(rhs);
+			result.y = getColumnVector(1).dotProduct(rhs);
+			result.z = getColumnVector(2).dotProduct(rhs);
+			result.w = getColumnVector(3).dotProduct(rhs);
+
+			return result;
+		}
+
+		Vector4f getColumnVector(uint32_t row) const
+		{
+			Vector4f result;
+
+			result.x = matrix[0 * 4 + row];
+			result.y = matrix[1 * 4 + row];
+			result.z = matrix[2 * 4 + row];
+			result.w = matrix[3 * 4 + row];
 
 			return result;
 		}
@@ -267,7 +291,6 @@ namespace eg
 			Mat4x4 result = identity();
 
 			//NOTE: Aspect ratio in here for free (because right = top * aspectRatio is what one passes in here)
-			//NOTE: Also look at persProj. #Similarities
 
 			//NOTE: scl
 			result.matrix[0 * 4 + 0] = 2 / (right - left);
@@ -284,30 +307,26 @@ namespace eg
 		static Mat4x4 persProj(float nearPlane, float farPlane, float aspectRatio, float fov)
 		{
 			//Coords of the projection plane at the nearPlane
-			//Could also be width, height. Then one could compute the aspectRatio, and the vfov as follows: 
-			float top = tanf(utils::degreesToRadians(fov / 2.0f)) * nearPlane;
-			float bottom = -top;
-			float right = top * aspectRatio;
-			float left = -right;
+			float d = tanf(utils::degreesToRadians(fov / 2.0f)) * nearPlane;
 
 			Mat4x4 result = identity();
 
-			//It really is (2 * near) / width, so the same as in ortho land. But one scales by near, to take that into account
-			result.matrix[0 * 4 + 0] = (2 * nearPlane) / (right - left);
-			result.matrix[1 * 4 + 1] = (2 * nearPlane) / (top - bottom);
+			result.matrix[0 * 4 + 0] = d;
+			result.matrix[1 * 4 + 1] = d * aspectRatio;
+			// or:
+			// result.matrix[0 * 4 + 0] = d / aspectRatio;
+			// result.matrix[1 * 4 + 1] = d;
+
 			//to normalize z between -1 and 1
 			//to get to these formulars, one has to solve the following equations:
 			// an + b = -n and af + b = f, where n = near and f = far and a and b are the coefficients to solve for
 			//really we want it to be = -1 and = 1, but we have to take into account that the perspective divide comes later, and then -n/n = -1 and f/f = 1
 			result.matrix[2 * 4 + 2] = -(2 / (farPlane - nearPlane));
-
-			result.matrix[3 * 4 + 0] = -(right + left) / (right - left);
-			result.matrix[3 * 4 + 1] = -(top + bottom) / (top - bottom);
 			//Other solved equation
 			result.matrix[3 * 4 + 2] = -((farPlane + nearPlane) / (farPlane - nearPlane));
 
-			//to get -z in w for perspective divide
-			result.matrix[2 * 4 + 3] = -1;
+			//to get z in w for perspective divide
+			result.matrix[2 * 4 + 3] = 1;
 
 			return result;
 		}

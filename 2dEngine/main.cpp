@@ -14,13 +14,32 @@ int main()
 	eg::Graphics2d& gfx = window.getGfx();
 	eg::SoundSystem soundSystem = window.getSndSys();
 
-	eg::Object object = eg::PlyLoader::load("cube.ply", { 0.0f, 0.0f, 0.0f }, eg::Quaternion(), { 1.0f, 1.0f, 1.0f });
+	eg::Object object = eg::PlyLoader::load("cube.ply", { 0.0f, 0.0f, 0.0f }, eg::Vector3f(), { 1.0f, 1.0f, 1.0f });
+	object.worldPos.z = 5.0f;
+	eg::Vector3f cameraWorldPos = { 0.0f, 0.0f, 0.0f };
+	eg::Vector3f cameraRot = { 0.0f, 0.0f, 0.0f };
+	eg::Camera camera(cameraWorldPos, 1.0f, 100.0f, cameraRot, 90.0f, 900.0f, 600.0f);
 
 	while (window.processEvents())
 	{
 		gfx.clear();
 
-		gfx.drawTriangle({ 100, 50 }, { 50, 150 }, { 150, 250 }, Colors::Yellow);
+		object.modelToWorldTranslation();
+
+		object.transform(camera.worldToCameraTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
+		object.transform(camera.cameraToPerspectiveTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
+		object.doZDivide();
+		object.transform(camera.perspectiveToScreenTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
+
+		std::vector<eg::Vector2i> polyline;
+		for (uint32_t i = 0; i < object.nPolygons; ++i)
+		{
+			polyline.push_back(object.polygons[i].transformedCoords[0]);
+			polyline.push_back(object.polygons[i].transformedCoords[1]);
+			polyline.push_back(object.polygons[i].transformedCoords[2]);
+			gfx.drawPolyline(polyline, Colors::White);
+			polyline.clear();
+		}
 
 		gfx.render();
 
