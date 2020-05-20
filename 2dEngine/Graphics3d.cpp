@@ -186,6 +186,30 @@ namespace eg
 			}
 		}
 	}
+	void Object::drawSolid(Graphics2d& gfx) const
+	{
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			if (polygons[i].state & eg::State::ACTIVE && !(polygons[i].state & eg::State::BACKFACE) &&
+				!(polygons[i].state & eg::State::CLIPPED))
+			{
+				switch (polygons[i].shadingMode)
+				{
+					case ShadingMode::CONST_COLOR:
+					{
+						gfx.drawTriangle(polygons[i].transformedCoords[0], polygons[i].transformedCoords[1],
+							polygons[i].transformedCoords[2], polygons[i].color);
+						break;
+					}
+					default:
+					{
+						InvalidCodePath;
+						break;
+					}
+				}
+			}
+		}
+	}
 	Camera::Camera(const Vector3f& worldPos, float nearClippingPlane, float farClippingPlane, float fov, float viewportWidth,
 		float viewportHeight)
 		:	worldPos(worldPos), direction(), target(), lookAt(), up(), right(), fov(fov),

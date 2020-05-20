@@ -29,7 +29,7 @@ namespace eg
 		Vector4f localCoords[3];
 		Vector4f transformedCoords[3];
 		Color color = Colors::White;
-		ShadingMode shadingMode;
+		ShadingMode shadingMode = ShadingMode::CONST_COLOR;
 		uint32_t state = State::ACTIVE;
 	};
 
@@ -55,6 +55,7 @@ namespace eg
 		void cullBackfaces(const Vector3f cameraWorldPos);
 		void clearFlags();
 		void drawWireframe(Graphics2d& gfx) const;
+		void drawSolid(Graphics2d& gfx) const;
 	};
 
 	struct Camera

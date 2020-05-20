@@ -32,7 +32,7 @@ int main()
 		object.transform(camera.cameraToPerspectiveTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
 		object.doZDivide();
 		object.transform(camera.perspectiveToScreenTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
-		object.drawWireframe(gfx);
+		object.drawSolid(gfx);
 		object.clearFlags();
 
 		gfx.render();
