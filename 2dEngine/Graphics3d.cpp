@@ -1,4 +1,5 @@
 #include "Graphics3d.h"
+#include "Line.h"
 
 namespace eg
 {
@@ -209,6 +210,138 @@ namespace eg
 				}
 			}
 		}
+	}
+	void Object::clipInCameraSpace(float fov, float nearZ, float farZ)
+	{
+		float d = tanf(utils::degreesToRadians(fov / 2.0f));
+
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			if (polygons[i].state & State::ACTIVE && !(polygons[i].state & State::BACKFACE))
+			{
+				polygons[i].state |= State::CLIPPED;
+				uint32_t zNearClipping = 0; //1 for < nearZ for every vertex
+				for (uint32_t j = 0; j < 3; ++j)
+				{
+					Vector3f coord = polygons[i].transformedCoords[j];
+					float tanZ = d * coord.z;
+					if (coord.x < tanZ && coord.x > -tanZ && coord.y < tanZ && coord.y > -tanZ && coord.z > nearZ && coord.z < farZ)
+					{
+						polygons[i].state &= ~State::CLIPPED;
+					}
+					else if (coord.z < nearZ)
+					{
+						zNearClipping |= 1 << j;
+					}
+				}
+
+				if (!(polygons[i].state & State::CLIPPED))
+				{
+					if (zNearClipping)
+					{
+						Plane plane{ {0.0f, 0.0f, nearZ }, {0.0f, 0.0f, 1.0f } };
+
+						//TODO: Add vertex attributes clipping if I have vertex attributes!
+						switch (zNearClipping)
+						{
+							case 1:
+							{
+								Vector3f intersection0 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 1, plane);
+								Vector3f intersection1 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 2, plane);
+
+								polygons[nPolygons].transformedCoords[0] = Vector4f(intersection0);
+								polygons[nPolygons].transformedCoords[1] = polygons[i].transformedCoords[1];
+								polygons[nPolygons].transformedCoords[2] = polygons[i].transformedCoords[2];
+								++nPolygons;
+								++nAddedClippingPolygons;
+
+								polygons[i].transformedCoords[0] = Vector4f(intersection1);
+								polygons[i].transformedCoords[1] = Vector4f(intersection0);
+								break;
+							}
+							case 2:
+							{
+								Vector3f intersection0 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 0, plane);
+								Vector3f intersection1 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 2, plane);
+
+								polygons[nPolygons].transformedCoords[0] = Vector4f(intersection0);
+								polygons[nPolygons].transformedCoords[1] = polygons[i].transformedCoords[2];
+								polygons[nPolygons].transformedCoords[2] = polygons[i].transformedCoords[0];
+								++nPolygons;
+								++nAddedClippingPolygons;
+
+								polygons[i].transformedCoords[0] = Vector4f(intersection0);
+								polygons[i].transformedCoords[1] = Vector4f(intersection1);
+								break;
+							}
+							case 4:
+							{
+								Vector3f intersection0 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 0, plane);
+								Vector3f intersection1 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 1, plane);
+
+								polygons[nPolygons].transformedCoords[0] = Vector4f(intersection1);
+								polygons[nPolygons].transformedCoords[1] = polygons[i].transformedCoords[0];
+								polygons[nPolygons].transformedCoords[2] = polygons[i].transformedCoords[1];
+								++nPolygons;
+								++nAddedClippingPolygons;
+
+								polygons[i].transformedCoords[1] = Vector4f(intersection1);
+								polygons[i].transformedCoords[2] = Vector4f(intersection0);
+								break;
+							}
+							case 3:
+							{
+								polygons[i].transformedCoords[0] =
+									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 2, plane);
+								polygons[i].transformedCoords[1] =
+									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 2, plane);
+								break;
+							}
+							case 5:
+							{
+								polygons[i].transformedCoords[0] =
+									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 1, plane);
+								polygons[i].transformedCoords[2] =
+									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 1, plane);
+								break;
+							}
+							case 6:
+							{
+								polygons[i].transformedCoords[1] =
+									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 0, plane);
+								polygons[i].transformedCoords[2] =
+									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 0, plane);
+								break;
+							}
+							default:
+							{
+								InvalidCodePath;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	void Object::removeAddedClippingPolygons()
+	{
+		nPolygons -= nAddedClippingPolygons;
+		nAddedClippingPolygons = 0;
+	}
+	Vector3f Object::clipLineToNearPlane(const Vector4f* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane)
+	{
+		assert(p0Index < 3 && p1Index < 3);
+
+		const Vector4f* p0 = &coords[p0Index];
+		const Vector4f* p1 = &coords[p1Index];
+
+		Line line{ *p0, *p1 };
+		auto intersectionDelta = line.getIntersectionDelta(plane);
+		assert(intersectionDelta.has_value());
+
+		Vector3f difference = *p1 - *p0;
+		return (*p0) + difference * (*intersectionDelta);
 	}
 	Camera::Camera(const Vector3f& worldPos, float nearClippingPlane, float farClippingPlane, float fov, float viewportWidth,
 		float viewportHeight)

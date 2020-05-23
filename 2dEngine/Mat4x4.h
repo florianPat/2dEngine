@@ -306,8 +306,8 @@ namespace eg
 
 		static Mat4x4 persProj(float nearPlane, float farPlane, float aspectRatio, float fov)
 		{
-			//Coords of the projection plane at the nearPlane
-			float d = tanf(utils::degreesToRadians(fov / 2.0f)) * nearPlane;
+			//distance to view window
+			float d = tanf(utils::degreesToRadians(fov / 2.0f));
 
 			Mat4x4 result = identity();
 

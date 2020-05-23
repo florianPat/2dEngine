@@ -16,23 +16,37 @@ int main()
 
 	eg::Object object = eg::PlyLoader::load("cube.ply", { 0.0f, 0.0f, 0.0f }, eg::Vector3f(), { 1.0f, 1.0f, 1.0f });
 	object.worldPos.z = 5.0f;
+	const float fov = 90.0f;
+	const float nearZ = 2.0f;
+	const float farZ = 100.0f;
 	eg::Mat4x4 rotMat = eg::Mat4x4::rotateY(45.0f);
 	eg::Vector3f cameraWorldPos = { 0.0f, 0.0f, 0.0f };
 	eg::Vector3f cameraRot = { 0.0f, 0.0f, 0.0f };
-	eg::Camera camera(cameraWorldPos, 1.0f, 100.0f, cameraRot, 90.0f, 900.0f, 600.0f);
+	eg::Camera camera(cameraWorldPos, nearZ, farZ, cameraRot, fov, 900.0f, 600.0f);
 
 	while (window.processEvents())
 	{
 		gfx.clear();
 
+		if (window.getKeyboard().isKeyPressed('W'))
+		{
+			object.worldPos.z += 20.0f * dt;
+		}
+		if (window.getKeyboard().isKeyPressed('S'))
+		{
+			object.worldPos.z -= 20.0f * dt;
+		}
+
 		object.transform(rotMat, eg::TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS, false);
 		object.modelToWorldTranslation(eg::TransformCase::TRANSFORM_COORDS_ONLY);
 		object.cullBackfaces(camera.worldPos);
 		object.transform(camera.worldToCameraTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
+		object.clipInCameraSpace(fov, nearZ, farZ);
 		object.transform(camera.cameraToPerspectiveTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
 		object.doZDivide();
 		object.transform(camera.perspectiveToScreenTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY, false);
 		object.drawSolid(gfx);
+		object.removeAddedClippingPolygons();
 		object.clearFlags();
 
 		gfx.render();

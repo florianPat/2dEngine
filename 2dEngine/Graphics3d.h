@@ -47,6 +47,7 @@ namespace eg
 		Vector3f scl;
 		Vector3f basis[3] = { {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f} };
 		uint32_t nPolygons;
+		uint32_t nAddedClippingPolygons = 0;
 		Polygon polygons[265];
 		void transform(const Mat4x4& transform, TransformCase transformCase, bool transformBasis);
 		void modelToWorldTranslation(TransformCase transformCase = TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS);
@@ -56,6 +57,10 @@ namespace eg
 		void clearFlags();
 		void drawWireframe(Graphics2d& gfx) const;
 		void drawSolid(Graphics2d& gfx) const;
+		void clipInCameraSpace(float fov, float nearZ, float farZ);
+		void removeAddedClippingPolygons();
+	private:
+		Vector3f clipLineToNearPlane(const Vector4f* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane);
 	};
 
 	struct Camera

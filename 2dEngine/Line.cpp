@@ -30,9 +30,9 @@ namespace eg
 	std::optional<float> Line::getIntersectionDelta(const Plane& plane) const
 	{
 		const Vector3f v = p1 - p0;
-		float d = -plane.normal.x * p0.x - plane.normal.y * p0.y - plane.normal.z * p0.z;
-		float t = (plane.normal.x * v.x + plane.normal.y * v.y + plane.normal.z * v.z) /
-			(plane.normal.x + plane.normal.y + plane.normal.z);
+		float d = -plane.normal.x * plane.point.x - plane.normal.y * plane.point.y - plane.normal.z * plane.point.z;
+		float t = -(plane.normal.x * p0.x + plane.normal.y * p0.y + plane.normal.z * p0.z + d) /
+			(plane.normal.x * v.x + plane.normal.y * v.y + plane.normal.z * v.z);
 		if(t < 0.0f || t > 1.0f)
 			return std::optional<float>();
 

@@ -38,35 +38,59 @@ namespace eg
 
 	void Graphics2d::drawFlatBottomTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color)
 	{
+		Vector2i clipP0, clipP1;
+
 		float dyLeft = ((float)p1.x - p0.x) / (p1.y - p0.y);
 		float dyRight = ((float)p2.x - p0.x) / (p2.y - p0.y);
 
-		putPixel(p0.x, p0.y, color);
+		if(p0.x >= 0 && p0.x < (int32_t)width && p0.y >= 0 && p0.y < (int32_t)height)
+			putPixel(p0.x, p0.y, color);
+
 		float x0 = (float)p0.x, x1 = (float)p0.x;
 		for (int i = p0.y + 1; i < p1.y; ++i)
 		{
 			x0 += dyLeft;
 			x1 += dyRight;
-			drawLine({ (int32_t)x0, i }, { (int32_t)x1, i }, color);
+
+			clipP0 = { (int32_t)x0, i };
+			clipP1 = { (int32_t)x1, i };
+			if (clipLine(clipP0, clipP1))
+				drawLine(clipP0, clipP1, color);
 		}
-		drawLine(p1, p2, color);
+
+		clipP0 = p0;
+		clipP1 = p1;
+		if (clipLine(clipP0, clipP1))
+			drawLine(clipP0, clipP1, color);
 	}
 
 	void Graphics2d::drawFlatTopTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color)
 	{
+		Vector2i clipP0, clipP1;
+
 		float dyLeft = ((float)p2.x - p0.x) / (p2.y - p0.y);
 		float dyRight = ((float)p2.x - p1.x) / (p2.y - p1.y);
 
-		drawLine(p0, p1, color);
+		clipP0 = p0;
+		clipP1 = p1;
+		if (clipLine(clipP0, clipP1))
+			drawLine(clipP0, clipP1, color);
+
 		float x0 = (float)p0.x, x1 = (float)p1.x;
 		for (int32_t i = p0.y + 1; i < p2.y; ++i)
 		{
 			x0 += dyLeft;
 			x1 += dyRight;
 
-			drawLine({ (int32_t)x0, i }, { (int32_t)x1, i }, color);
+			clipP0 = { (int32_t)x0, i };
+			clipP1 = { (int32_t)x1, i };
+
+			if (clipLine(clipP0, clipP1))
+				drawLine(clipP0, clipP1, color);
 		}
-		putPixel(p2.x, p2.y, color);
+
+		if (p2.x >= 0 && p2.x < (int32_t)width && p2.y >= 0 && p2.y < (int32_t)height)
+			putPixel(p2.x, p2.y, color);
 	}
 
 	Graphics2d::~Graphics2d()
