@@ -18,7 +18,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						vertexBuffer[i].localCoords[j] = transform * vertexBuffer[i].localCoords[j];
+						vertexBuffer[i].localCoords[j].pos = transform * vertexBuffer[i].localCoords[j].pos;
 					}
 				}
 				break;
@@ -35,7 +35,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						vertexBuffer[i].transformedCoords[j] = transform * vertexBuffer[i].transformedCoords[j];
+						vertexBuffer[i].transformedCoords[j].pos = transform * vertexBuffer[i].transformedCoords[j].pos;
 					}
 				}
 				break;
@@ -52,7 +52,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						vertexBuffer[i].transformedCoords[j] = transform * vertexBuffer[i].localCoords[j];
+						vertexBuffer[i].transformedCoords[j].pos = transform * vertexBuffer[i].localCoords[j].pos;
 					}
 				}
 				break;
@@ -81,7 +81,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						vertexBuffer[i].transformedCoords[j] = vertexBuffer[i].localCoords[j] + worldPos;
+						vertexBuffer[i].transformedCoords[j].pos = vertexBuffer[i].localCoords[j].pos + worldPos;
 					}
 				}
 				break;
@@ -98,7 +98,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						vertexBuffer[i].transformedCoords[j] = vertexBuffer[i].transformedCoords[j] + worldPos;
+						vertexBuffer[i].transformedCoords[j].pos = vertexBuffer[i].transformedCoords[j].pos + worldPos;
 					}
 				}
 				break;

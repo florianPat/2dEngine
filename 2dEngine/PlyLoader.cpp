@@ -115,7 +115,7 @@ namespace eg
 		}
 		std::getline(file, line);
 
-		std::vector<Vector4f> vertices;
+		std::vector<Vertex> vertices;
 		std::vector<uint16_t> indicies;
 		indicies.reserve(result.nPolygons);
 
@@ -128,7 +128,7 @@ namespace eg
 					uint32_t j = 0;
 					for (; j < element.valueCount; ++j, std::getline(file, line))
 					{
-						Vector4f vertex;
+						Vertex vertex;
 
 						for (uint32_t k = 0; k < element.properties.size(); ++k)
 						{
@@ -136,15 +136,25 @@ namespace eg
 
 							switch (property.name[0])
 							{
-								case 'x': readLocalVertexElement(x)
-								case 'y': readLocalVertexElement(y)
-								case 'z': readLocalVertexElement(z)
+								case 'x': readLocalVertexElement(pos.x)
+								case 'y': readLocalVertexElement(pos.y)
+								case 'z': readLocalVertexElement(pos.z)
 
 								case 'n':
+								{
+									readLocalVertexElement(normal.x)
+									readLocalVertexElement(normal.y)
+									readLocalVertexElement(normal.z)
+									break;
+								}
 								case 's':
+								{
+									readLocalVertexElement(textureCoord.x)
+									break;
+								}
 								case 't':
 								{
-									line.erase(0, line.find(' ') + (k == (element.properties.size() - 1) ? 0 : 1));
+									readLocalVertexElement(textureCoord.y)
 									break;
 								}
 							}

@@ -1,4 +1,8 @@
 #include "Graphics2d.h"
+#include "Graphics3d.h"
+
+#define VERTEX_ATTRIBUTE_LERP(v1Attribute, v1Lerp, vAt, v0Attribute, v0Lerp) \
+	(v1Attribute * (v1Lerp - vAt) + v0Attribute * (vAt - v0Lerp)) / (v1Lerp - v0Lerp)
 
 namespace eg
 {
@@ -13,7 +17,7 @@ namespace eg
 	Graphics2d::Graphics2d(HWND& windowHandle, int width, int height)
 		: windowHandle(windowHandle), width(width),
 		height(height), pitch(width),
-		backBuffer(new uint32_t[width * height])
+		backBuffer(new uint32_t[width * height]), zBuffer(new float[width * height])
 	{
 		bitmapInfo.bmiHeader.biSize = sizeof(bitmapInfo.bmiHeader);
 		bitmapInfo.bmiHeader.biWidth = width;
@@ -36,67 +40,153 @@ namespace eg
 			y = height - 1;
 	}
 
-	void Graphics2d::drawFlatBottomTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color)
+	void Graphics2d::drawFlatBottomTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2)
 	{
 		Vector2i clipP0, clipP1;
 
-		float dyLeft = ((float)p1.x - p0.x) / (p1.y - p0.y);
-		float dyRight = ((float)p2.x - p0.x) / (p2.y - p0.y);
+		float dyLeft = (v1.pos.x - v0.pos.x) / (v1.pos.y - v0.pos.y);
+		float dyRight = (v2.pos.x - v0.pos.x) / (v2.pos.y - v0.pos.y);
+		float dzLeft = (v1.pos.z - v0.pos.z) / (v1.pos.y - v0.pos.y);
+		float dzRight = (v2.pos.z - v0.pos.z) / (v2.pos.y - v0.pos.y);
 
-		if(p0.x >= 0 && p0.x < (int32_t)width && p0.y >= 0 && p0.y < (int32_t)height)
-			putPixel(p0.x, p0.y, color);
+		if (v0.pos.x >= 0 && v0.pos.x < (float)width && v0.pos.y >= 0 && v0.pos.y < (float)height)
+		{
+			uint32_t zBufferIndex = (uint32_t)v0.pos.y * height + (uint32_t)v0.pos.x;
+			if (v0.pos.z > zBuffer[zBufferIndex])
+			{
+				putPixel((int32_t)v0.pos.x, (int32_t)v0.pos.y, v0.color);
+				zBuffer[zBufferIndex] = v0.pos.z;
+			}
+		}
 
-		float x0 = (float)p0.x, x1 = (float)p0.x;
-		for (int i = p0.y + 1; i < p1.y; ++i)
+		float x0 = v0.pos.x, x1 = v0.pos.x;
+		float zLeft = v0.pos.w, zRight = v1.pos.w;
+		for (float i = v0.pos.y + 1; i < v1.pos.y; ++i)
 		{
 			x0 += dyLeft;
 			x1 += dyRight;
+			zLeft += dzLeft;
+			zRight += dzRight;
+			float dzX = (-zLeft + zRight) / (x1 - x0);
+			float z = zLeft;
 
-			clipP0 = { (int32_t)x0, i };
-			clipP1 = { (int32_t)x1, i };
-			if (clipLine(clipP0, clipP1))
-				drawLine(clipP0, clipP1, color);
+			if (i < 0.0f || i >= height)
+				continue;
+
+			for (float x = x0; x < x1; ++x)
+			{
+				if (x0 >= 0.0f && x1 < width)
+				{
+					uint32_t zBufferIndex = (uint32_t)i * height + (uint32_t)x;
+					if (z > zBuffer[zBufferIndex])
+					{
+						putPixel((int32_t)x, (int32_t)i, v0.color);
+						zBuffer[zBufferIndex] = z;
+					}
+				}
+
+				z += dzX;
+			}
 		}
 
-		clipP0 = p0;
-		clipP1 = p1;
-		if (clipLine(clipP0, clipP1))
-			drawLine(clipP0, clipP1, color);
+		if (v1.pos.y < 0.0f || v1.pos.y >= height)
+			return;
+
+		float dzX = (-v1.pos.z + v2.pos.z) / (v2.pos.x - v1.pos.x);
+		float z = v1.pos.z;
+		for (float x = v1.pos.x; x < v2.pos.x; ++x)
+		{
+			if (x >= 0.0f && x < width)
+			{
+				uint32_t zBufferIndex = (uint32_t)v1.pos.y * height + (uint32_t)x;
+				if (z > zBuffer[zBufferIndex])
+				{
+					putPixel((uint32_t)x, (uint32_t)v1.pos.y, v0.color);
+					zBuffer[zBufferIndex] = z;
+				}
+			}
+
+			z += dzX;
+		}
 	}
 
-	void Graphics2d::drawFlatTopTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color)
+	void Graphics2d::drawFlatTopTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2)
 	{
 		Vector2i clipP0, clipP1;
 
-		float dyLeft = ((float)p2.x - p0.x) / (p2.y - p0.y);
-		float dyRight = ((float)p2.x - p1.x) / (p2.y - p1.y);
+		float dyLeft = (v2.pos.x - v0.pos.x) / (v2.pos.y - v0.pos.y);
+		float dyRight = (v2.pos.x - v1.pos.x) / (v2.pos.y - v1.pos.y);
+		float dzLeft = (v2.pos.z - v0.pos.z) / (v2.pos.y - v0.pos.y);
+		float dzRight = (v2.pos.z - v1.pos.z) / (v2.pos.y - v1.pos.y);
 
-		clipP0 = p0;
-		clipP1 = p1;
-		if (clipLine(clipP0, clipP1))
-			drawLine(clipP0, clipP1, color);
+		if (v0.pos.y >= 0.0f && v0.pos.y < height)
+		{
+			float dzX = (-v0.pos.z + v1.pos.z) / (v1.pos.x - v0.pos.x);
+			float z = v0.pos.z;
+			for (float x = v0.pos.x; x < v1.pos.x; ++x)
+			{
+				if (x >= 0.0f && x < width)
+				{
+					uint32_t zBufferIndex = (uint32_t)v0.pos.y * height + (uint32_t)x;
+					if (z > zBuffer[zBufferIndex])
+					{
+						putPixel((uint32_t)x, (uint32_t)v0.pos.y, v0.color);
+						zBuffer[zBufferIndex] = z;
+					}
+				}
 
-		float x0 = (float)p0.x, x1 = (float)p1.x;
-		for (int32_t i = p0.y + 1; i < p2.y; ++i)
+				z += dzX;
+			}
+		}
+
+		float x0 = v0.pos.x, x1 = v1.pos.x;
+		float zLeft = v0.pos.z, zRight = v1.pos.z;
+		for (float i = v0.pos.y + 1; i < v2.pos.y; ++i)
 		{
 			x0 += dyLeft;
 			x1 += dyRight;
+			zLeft += dzLeft;
+			zRight += dzRight;
+			float dzX = (-zLeft + zRight) / (x1 - x0);
+			float z = zLeft;
 
-			clipP0 = { (int32_t)x0, i };
-			clipP1 = { (int32_t)x1, i };
+			if (i < 0.0f || i >= height)
+				continue;
 
-			if (clipLine(clipP0, clipP1))
-				drawLine(clipP0, clipP1, color);
+			for (float x = x0; x < x1; ++x)
+			{
+				if (x0 >= 0.0f && x1 < width)
+				{
+					uint32_t zBufferIndex = (uint32_t)i * height + (uint32_t)x;
+					if (z > zBuffer[zBufferIndex])
+					{
+						putPixel((int32_t)x, (int32_t)i, v0.color);
+						zBuffer[zBufferIndex] = z;
+					}
+				}
+
+				z += dzX;
+			}
 		}
 
-		if (p2.x >= 0 && p2.x < (int32_t)width && p2.y >= 0 && p2.y < (int32_t)height)
-			putPixel(p2.x, p2.y, color);
+		if (v2.pos.x >= 0 && v2.pos.x < (float)width && v2.pos.y >= 0 && v2.pos.y < (float)height)
+		{
+			uint32_t zBufferIndex = (uint32_t)v2.pos.y * height + (uint32_t)v2.pos.x;
+			if (v2.pos.z > zBuffer[zBufferIndex])
+			{
+				putPixel((int32_t)v2.pos.x, (int32_t)v2.pos.y, v0.color);
+				zBuffer[zBufferIndex] = v2.pos.z;
+			}
+		}
 	}
 
 	Graphics2d::~Graphics2d()
 	{
-		delete [] backBuffer;
+		delete[] backBuffer;
 		backBuffer = nullptr;
+
+		delete[] zBuffer;
+		zBuffer = nullptr;
 	}
 
 	void Graphics2d::clear()
@@ -106,6 +196,14 @@ namespace eg
 			for (uint32_t x = 0; x < width; ++x)
 			{
 				backBuffer[x + y * pitch] = 0;
+			}
+		}
+
+		for (uint32_t y = 0; y < height; ++y)
+		{
+			for (uint32_t x = 0; x < width; ++x)
+			{
+				zBuffer[x + y * pitch] = 0;
 			}
 		}
 	}
@@ -477,68 +575,84 @@ namespace eg
 			drawLine(points[points.size() - 1], points[0], color);
 	}
 
-	void Graphics2d::drawTriangle(Vector2i p0, Vector2i p1, Vector2i p2, Color color)
+	void Graphics2d::drawTriangle(const Vertex* vertices)
 	{
-		Vector2i temp;
+		const Vertex* v0 = vertices, * v1 = &vertices[1], * v2 = &vertices[2];
 
-		if (p0.y > p2.y)
+		const Vertex* temp;
+
+		if (v0->pos.y > v2->pos.y)
 		{
-			temp = p2;
-			p2 = p0;
-			p0 = temp;
+			temp = v2;
+			v2 = v0;
+			v0 = temp;
 		}
-		if (p0.y > p1.y)
+		if (v0->pos.y > v1->pos.y)
 		{
-			temp = p1;
-			p1 = p0;
-			p0 = temp;
+			temp = v1;
+			v1 = v0;
+			v0 = temp;
 		}
-		if (p1.y > p2.y)
+		if (v1->pos.y > v2->pos.y)
 		{
-			temp = p2;
-			p2 = p1;
-			p1 = temp;
+			temp = v2;
+			v2 = v1;
+			v1 = temp;
 		}
 
-		if (p0.y == p1.y)
+		if (v0->pos.y == v1->pos.y)
 		{
-			if (p0.x > p1.x)
+			if (v0->pos.x > v1->pos.x)
 			{
-				temp = p1;
-				p1 = p0;
-				p0 = temp;
+				temp = v1;
+				v1 = v0;
+				v0 = temp;
 			}
 
-			drawFlatTopTriangle(p0, p1, p2, color);
+			drawFlatTopTriangle(*v0, *v1, *v2);
 		}
-		else if (p1.y == p2.y)
+		else if (v1->pos.y == v2->pos.y)
 		{
-			if (p1.x > p2.x)
+			if (v1->pos.x > v2->pos.x)
 			{
-				temp = p2;
-				p2 = p1;
-				p1 = temp;
+				temp = v2;
+				v2 = v1;
+				v1 = temp;
 			}
 
-			drawFlatBottomTriangle(p0, p1, p2, color);
+			drawFlatBottomTriangle(*v0, *v1, *v2);
 		}
 		else
 		{
-			if (p1.x > p0.x)
+			if (v1->pos.x > v0->pos.x)
 			{
-				float dyLeft = ((float)p2.x - p0.x) / (p2.y - p0.y);
+				float dyLeft = (v2->pos.x - v0->pos.x) / (v2->pos.y - v0->pos.y);
 				
-				Vector2i realP2 = { (int32_t)(dyLeft * (p1.y - p0.y) + p0.x), p1.y };
-				drawFlatBottomTriangle(p0, realP2, p1, color);
-				drawFlatTopTriangle(realP2, p1, p2, color);
+				Vertex realV2 = {};
+				float z = VERTEX_ATTRIBUTE_LERP(v1->pos.z, v1->pos.y, realV2.pos.z, v0->pos.z, v0->pos.y);
+				realV2.pos = { dyLeft * (v1->pos.y - v0->pos.y) + v0->pos.x, v1->pos.y, 1.0f, z };
+				realV2.normal = VERTEX_ATTRIBUTE_LERP(v1->normal, v1->pos.y, realV2.pos.y, v0->normal, v0->pos.y);
+				realV2.normal.normalize();
+				realV2.textureCoord = VERTEX_ATTRIBUTE_LERP(v1->textureCoord, v1->pos.y, realV2.pos.y, v0->textureCoord, v0->pos.y);
+				
+				drawFlatBottomTriangle(*v0, realV2, *v1);
+				drawFlatTopTriangle(realV2, *v1, *v2);
 			}
 			else
 			{
-				float dyRight = ((float)p2.x - p0.x) / (p2.y - p0.y);
+				float dyRight = (v2->pos.x - v0->pos.x) / (v2->pos.y - v0->pos.y);
 
-				Vector2i realP2 = { (int32_t)(dyRight * (p1.y - p0.y) + p0.x), p1.y };
-				drawFlatBottomTriangle(p0, p1, realP2, color);
-				drawFlatTopTriangle(p1, realP2, p2, color);
+				Vertex realV2 = {};
+				float z = VERTEX_ATTRIBUTE_LERP(v1->pos.z, v1->pos.y, realV2.pos.y, v0->pos.z, v0->pos.y);
+				// NOTE: x can also be computed as follows:
+				// float x = VERTEX_ATTRIBUTE_LERP(v2->pos.x, v2->pos.y, v1->pos.y, v0->pos.x, v0->pos.y);
+				realV2.pos = { dyRight * (v1->pos.y - v0->pos.y) + v0->pos.x, v1->pos.y, 1.0f, z };
+				realV2.normal = VERTEX_ATTRIBUTE_LERP(v1->normal, v1->pos.y, realV2.pos.y, v0->normal, v0->pos.y);
+				realV2.normal.normalize();
+				realV2.textureCoord = VERTEX_ATTRIBUTE_LERP(v1->textureCoord, v1->pos.y, realV2.pos.y, v0->textureCoord, v0->pos.y);
+
+				drawFlatBottomTriangle(*v0, *v1, realV2);
+				drawFlatTopTriangle(*v1, realV2, *v2);
 			}
 		}
 	}

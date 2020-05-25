@@ -3,7 +3,7 @@
 
 namespace eg
 {
-	void Object::transform(const Mat4x4& transform, TransformCase transformCase, bool transformBasis)
+	void Object::transform(const Mat4x4& transform, TransformCase transformCase)
 	{
 		switch (transformCase)
 		{
@@ -19,7 +19,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						polygons[i].localCoords[j] = transform * polygons[i].localCoords[j];
+						polygons[i].localCoords[j].pos = transform * polygons[i].localCoords[j].pos;
 					}
 				}
 				break;
@@ -36,7 +36,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						polygons[i].transformedCoords[j] = transform * polygons[i].transformedCoords[j];
+						polygons[i].transformedCoords[j].pos = transform * polygons[i].transformedCoords[j].pos;
 					}
 				}
 				break;
@@ -53,7 +53,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						polygons[i].transformedCoords[j] = transform * polygons[i].localCoords[j];
+						polygons[i].transformedCoords[j].pos = transform * polygons[i].localCoords[j].pos;
 					}
 				}
 				break;
@@ -62,14 +62,6 @@ namespace eg
 			{
 				InvalidCodePath;
 				break;
-			}
-		}
-
-		if (transformBasis)
-		{
-			for (uint32_t i = 0; i < 3; ++i)
-			{
-				basis[i] = transform * basis[i];
 			}
 		}
 	}
@@ -89,7 +81,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						polygons[i].transformedCoords[j] = polygons[i].localCoords[j] + worldPos;
+						polygons[i].transformedCoords[j].pos = polygons[i].localCoords[j].pos + worldPos;
 					}
 				}
 				break;
@@ -106,7 +98,7 @@ namespace eg
 
 					for (uint32_t j = 0; j < 3; ++j)
 					{
-						polygons[i].transformedCoords[j] = polygons[i].transformedCoords[j] + worldPos;
+						polygons[i].transformedCoords[j].pos += worldPos;
 					}
 				}
 				break;
@@ -118,6 +110,101 @@ namespace eg
 			}
 		}
 	}
+	void Object::modelToWorldRotation(TransformCase transformCase)
+	{
+		switch (transformCase)
+		{
+			case TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS:
+			{
+				for (uint32_t i = 0; i < nPolygons; ++i)
+				{
+					if (uint32_t state = polygons[i].state; !(state & eg::State::ACTIVE) || (state & eg::State::BACKFACE)
+						|| (state & eg::State::CLIPPED))
+					{
+						continue;
+					}
+
+					for (uint32_t j = 0; j < 3; ++j)
+					{						
+						polygons[i].transformedCoords[j].pos = computeRotation(polygons[i].localCoords[j].pos);
+
+						// NOTE: Also rotating the normal to transform that propery (no need to translate or scale)
+						polygons[i].transformedCoords[j].normal = computeRotation(polygons[i].localCoords[j].normal);
+					}
+				}
+				break;
+			}
+			case TransformCase::TRANSFORM_COORDS_ONLY:
+			{
+				for (uint32_t i = 0; i < nPolygons; ++i)
+				{
+					if (uint32_t state = polygons[i].state; !(state & eg::State::ACTIVE) || (state & eg::State::BACKFACE)
+						|| (state & eg::State::CLIPPED))
+					{
+						continue;
+					}
+
+					for (uint32_t j = 0; j < 3; ++j)
+					{
+						polygons[i].transformedCoords[j].pos = computeRotation(polygons[i].transformedCoords[j].pos);
+
+						polygons[i].transformedCoords[j].normal = computeRotation(polygons[i].transformedCoords[j].normal);
+					}
+				}
+				break;
+			}
+			default:
+			{
+				InvalidCodePath;
+				break;
+			}
+		}
+	}
+	void Object::modelToWorldScale(TransformCase transformCase)
+	{
+		switch (transformCase)
+		{
+		case TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS:
+		{
+			for (uint32_t i = 0; i < nPolygons; ++i)
+			{
+				if (uint32_t state = polygons[i].state; !(state & eg::State::ACTIVE) || (state & eg::State::BACKFACE)
+					|| (state & eg::State::CLIPPED))
+				{
+					continue;
+				}
+
+				for (uint32_t j = 0; j < 3; ++j)
+				{
+					polygons[i].transformedCoords[j].pos = polygons[i].localCoords[j].pos * scl;
+				}
+			}
+			break;
+		}
+		case TransformCase::TRANSFORM_COORDS_ONLY:
+		{
+			for (uint32_t i = 0; i < nPolygons; ++i)
+			{
+				if (uint32_t state = polygons[i].state; !(state & eg::State::ACTIVE) || (state & eg::State::BACKFACE)
+					|| (state & eg::State::CLIPPED))
+				{
+					continue;
+				}
+
+				for (uint32_t j = 0; j < 3; ++j)
+				{
+					polygons[i].transformedCoords[j].pos *= scl;
+				}
+			}
+			break;
+		}
+		default:
+		{
+			InvalidCodePath;
+			break;
+		}
+		}
+	}
 	float Object::computeMaxRadius() const
 	{
 		float result = 0.0f;
@@ -127,7 +214,7 @@ namespace eg
 		{
 			for (uint32_t j = 0; j < 3; ++j)
 			{
-				currentLengthSq = polygons[i].localCoords[j].getLenghtSq();
+				currentLengthSq = polygons[i].localCoords[j].pos.getLenghtSq();
 				if (result < currentLengthSq)
 				{
 					result = currentLengthSq;
@@ -143,7 +230,7 @@ namespace eg
 		{
 			for (uint32_t j = 0; j < 3; ++j)
 			{
-				polygons[i].transformedCoords[j].homogeneousDivide();
+				polygons[i].transformedCoords[j].pos.doZDivide();
 			}
 		}
 	}
@@ -152,11 +239,11 @@ namespace eg
 		Vector3f normal;
 		for (uint32_t i = 0; i < nPolygons; ++i)
 		{
-			Vector3f v0 = polygons[i].transformedCoords[1] - polygons[i].transformedCoords[0];
-			Vector3f v1 = polygons[i].transformedCoords[2] - polygons[i].transformedCoords[0];
+			Vector3f v0 = polygons[i].transformedCoords[1].pos - polygons[i].transformedCoords[0].pos;
+			Vector3f v1 = polygons[i].transformedCoords[2].pos - polygons[i].transformedCoords[0].pos;
 			normal = v0.crossProduct(v1);
 
-			Vector3f polygonCameraDifference = polygons[i].transformedCoords[0] - cameraWorldPos;
+			Vector3f polygonCameraDifference = polygons[i].transformedCoords[0].pos - cameraWorldPos;
 
 			if (normal.dotProduct(polygonCameraDifference) > 0.0f)
 			{
@@ -179,10 +266,10 @@ namespace eg
 			if (polygons[i].state & eg::State::ACTIVE && !(polygons[i].state & eg::State::BACKFACE) &&
 				!(polygons[i].state & eg::State::CLIPPED))
 			{
-				polyline.push_back(polygons[i].transformedCoords[0]);
-				polyline.push_back(polygons[i].transformedCoords[1]);
-				polyline.push_back(polygons[i].transformedCoords[2]);
-				gfx.drawPolyline(polyline, polygons[i].color);
+				polyline.push_back(polygons[i].transformedCoords[0].pos);
+				polyline.push_back(polygons[i].transformedCoords[1].pos);
+				polyline.push_back(polygons[i].transformedCoords[2].pos);
+				gfx.drawPolyline(polyline, polygons[i].transformedCoords[0].color);
 				polyline.clear();
 			}
 		}
@@ -198,8 +285,7 @@ namespace eg
 				{
 					case ShadingMode::CONST_COLOR:
 					{
-						gfx.drawTriangle(polygons[i].transformedCoords[0], polygons[i].transformedCoords[1],
-							polygons[i].transformedCoords[2], polygons[i].color);
+						gfx.drawTriangle(polygons[i].transformedCoords);
 						break;
 					}
 					default:
@@ -223,7 +309,7 @@ namespace eg
 				uint32_t zNearClipping = 0; //1 for < nearZ for every vertex
 				for (uint32_t j = 0; j < 3; ++j)
 				{
-					Vector3f coord = polygons[i].transformedCoords[j];
+					Vector3f coord = polygons[i].transformedCoords[j].pos;
 					float tanZ = d * coord.z;
 					if (coord.x < tanZ && coord.x > -tanZ && coord.y < tanZ && coord.y > -tanZ && coord.z > nearZ && coord.z < farZ)
 					{
@@ -249,14 +335,14 @@ namespace eg
 								Vector3f intersection0 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 1, plane);
 								Vector3f intersection1 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 2, plane);
 
-								polygons[nPolygons].transformedCoords[0] = Vector4f(intersection0);
+								polygons[nPolygons].transformedCoords[0].pos = Vector4f(intersection0);
 								polygons[nPolygons].transformedCoords[1] = polygons[i].transformedCoords[1];
 								polygons[nPolygons].transformedCoords[2] = polygons[i].transformedCoords[2];
 								++nPolygons;
 								++nAddedClippingPolygons;
 
-								polygons[i].transformedCoords[0] = Vector4f(intersection1);
-								polygons[i].transformedCoords[1] = Vector4f(intersection0);
+								polygons[i].transformedCoords[0].pos = Vector4f(intersection1);
+								polygons[i].transformedCoords[1].pos = Vector4f(intersection0);
 								break;
 							}
 							case 2:
@@ -264,14 +350,14 @@ namespace eg
 								Vector3f intersection0 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 0, plane);
 								Vector3f intersection1 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 2, plane);
 
-								polygons[nPolygons].transformedCoords[0] = Vector4f(intersection0);
+								polygons[nPolygons].transformedCoords[0].pos = Vector4f(intersection0);
 								polygons[nPolygons].transformedCoords[1] = polygons[i].transformedCoords[2];
 								polygons[nPolygons].transformedCoords[2] = polygons[i].transformedCoords[0];
 								++nPolygons;
 								++nAddedClippingPolygons;
 
-								polygons[i].transformedCoords[0] = Vector4f(intersection0);
-								polygons[i].transformedCoords[1] = Vector4f(intersection1);
+								polygons[i].transformedCoords[0].pos = Vector4f(intersection0);
+								polygons[i].transformedCoords[1].pos = Vector4f(intersection1);
 								break;
 							}
 							case 4:
@@ -279,37 +365,37 @@ namespace eg
 								Vector3f intersection0 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 0, plane);
 								Vector3f intersection1 = clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 1, plane);
 
-								polygons[nPolygons].transformedCoords[0] = Vector4f(intersection1);
+								polygons[nPolygons].transformedCoords[0].pos = Vector4f(intersection1);
 								polygons[nPolygons].transformedCoords[1] = polygons[i].transformedCoords[0];
 								polygons[nPolygons].transformedCoords[2] = polygons[i].transformedCoords[1];
 								++nPolygons;
 								++nAddedClippingPolygons;
 
-								polygons[i].transformedCoords[1] = Vector4f(intersection1);
-								polygons[i].transformedCoords[2] = Vector4f(intersection0);
+								polygons[i].transformedCoords[1].pos = Vector4f(intersection1);
+								polygons[i].transformedCoords[2].pos = Vector4f(intersection0);
 								break;
 							}
 							case 3:
 							{
-								polygons[i].transformedCoords[0] =
+								polygons[i].transformedCoords[0].pos =
 									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 2, plane);
-								polygons[i].transformedCoords[1] =
+								polygons[i].transformedCoords[1].pos =
 									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 2, plane);
 								break;
 							}
 							case 5:
 							{
-								polygons[i].transformedCoords[0] =
+								polygons[i].transformedCoords[0].pos =
 									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 0, 1, plane);
-								polygons[i].transformedCoords[2] =
+								polygons[i].transformedCoords[2].pos =
 									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 1, plane);
 								break;
 							}
 							case 6:
 							{
-								polygons[i].transformedCoords[1] =
+								polygons[i].transformedCoords[1].pos =
 									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 1, 0, plane);
-								polygons[i].transformedCoords[2] =
+								polygons[i].transformedCoords[2].pos =
 									clipLineToNearPlane(polygons[i].transformedCoords, nearZ, 2, 0, plane);
 								break;
 							}
@@ -329,12 +415,12 @@ namespace eg
 		nPolygons -= nAddedClippingPolygons;
 		nAddedClippingPolygons = 0;
 	}
-	Vector3f Object::clipLineToNearPlane(const Vector4f* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane)
+	Vector3f Object::clipLineToNearPlane(const Vertex* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane)
 	{
 		assert(p0Index < 3 && p1Index < 3);
 
-		const Vector4f* p0 = &coords[p0Index];
-		const Vector4f* p1 = &coords[p1Index];
+		const Vector4f* p0 = &coords[p0Index].pos;
+		const Vector4f* p1 = &coords[p1Index].pos;
 
 		Line line{ *p0, *p1 };
 		auto intersectionDelta = line.getIntersectionDelta(plane);
@@ -342,6 +428,26 @@ namespace eg
 
 		Vector3f difference = *p1 - *p0;
 		return (*p0) + difference * (*intersectionDelta);
+	}
+	Vector4f Object::computeRotation(const Vector4f& p) const
+	{
+		float sinX = sinf(utils::degreesToRadians(rot.x));
+		float cosX = cosf(utils::degreesToRadians(rot.x));
+		float sinY = sinf(utils::degreesToRadians(rot.y));
+		float cosY = cosf(utils::degreesToRadians(rot.y));
+		float sinZ = sinf(utils::degreesToRadians(rot.z));
+		float cosZ = cosf(utils::degreesToRadians(rot.z));
+
+		Vector4f result;
+		// NOTE: The same as this but multiplied out:
+		//polygons[i].transformedCoords[j].pos = Mat4x4::rotate(rot.z) * Mat4x4::rotateY(rot.y) * Mat4x4::rotate
+		// (rot.x) * polygons[i].localCoords[j].pos;
+		result.x = cosZ * cosY * p.x + -sinZ * cosX * p.y + sinY * p.z;
+		result.y = (sinZ * cosX + cosZ * -sinX) * p.x + cosZ * cosX * p.y + cosY * sinX * p.z;
+		result.z = (-sinY * cosZ + sinZ * -sinX) * p.x + (-sinZ * -sinY * cosX + cosZ * -sinX) * p.y +
+			cosY * cosX * p.z;
+
+		return result;
 	}
 	Camera::Camera(const Vector3f& worldPos, float nearClippingPlane, float farClippingPlane, float fov, float viewportWidth,
 		float viewportHeight)

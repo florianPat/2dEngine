@@ -22,10 +22,11 @@ namespace eg
 		const uint32_t width, height;
 	private:
 		uint32_t pitch;
+		float* zBuffer;
 	private:
 		void ClipRect(int& x, int& y);
-		void drawFlatBottomTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color);
-		void drawFlatTopTriangle(const Vector2i& p0, const Vector2i& p1, const Vector2i& p2, Color color);
+		void drawFlatBottomTriangle(const struct Vertex& v0, const Vertex& v1, const Vertex& v2);
+		void drawFlatTopTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2);
 	public:
 		Graphics2d(HWND& windowHandle, int width, int height);
 		~Graphics2d();
@@ -42,7 +43,7 @@ namespace eg
 		void drawLine(const Vector2i& p0, const Vector2i& p1, Color color);
 		bool clipLine(Vector2i& p0, Vector2i& p1);
 		void drawPolyline(std::vector<Vector2i> points, Color color);
-		void drawTriangle(Vector2i p0, Vector2i p1, Vector2i p2, Color color);
+		void drawTriangle(const struct Vertex* vertices);
 		void render();
 	};
 }

@@ -19,6 +19,14 @@ namespace eg
 			z /= w;
 			w = 1.0f;
 		}
+		void doZDivide()
+		{
+			x /= w;
+			y /= w;
+			// NOTE: For z buffering and perspective correct texture mapping
+			z = 1 / w;
+			w = 1.0f;
+		}
 		template <typename O>
 		operator Vector2<O>() const
 		{

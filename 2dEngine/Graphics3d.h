@@ -24,11 +24,18 @@ namespace eg
 		BACKFACE = 4,
 	};
 
+	struct Vertex
+	{
+		Vector4f pos;
+		Vector3f normal;
+		Vector2f textureCoord;
+		Color color = Colors::White;
+	};
+
 	struct Polygon
 	{
-		Vector4f localCoords[3];
-		Vector4f transformedCoords[3];
-		Color color = Colors::White;
+		Vertex localCoords[3];
+		Vertex transformedCoords[3];
 		ShadingMode shadingMode = ShadingMode::CONST_COLOR;
 		uint32_t state = State::ACTIVE;
 	};
@@ -49,8 +56,10 @@ namespace eg
 		uint32_t nPolygons;
 		uint32_t nAddedClippingPolygons = 0;
 		Polygon polygons[265];
-		void transform(const Mat4x4& transform, TransformCase transformCase, bool transformBasis);
-		void modelToWorldTranslation(TransformCase transformCase = TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS);
+		void transform(const Mat4x4& transform, TransformCase transformCase);
+		void modelToWorldTranslation(TransformCase transformCase = TransformCase::TRANSFORM_COORDS_ONLY);
+		void modelToWorldRotation(TransformCase transformCase = TransformCase::TRANSFORM_COORDS_ONLY);
+		void modelToWorldScale(TransformCase transformCase = TransformCase::LOCAL_COORDS_TO_TRANSFORM_COORDS);
 		float computeMaxRadius() const;
 		void doZDivide();
 		void cullBackfaces(const Vector3f cameraWorldPos);
@@ -60,7 +69,8 @@ namespace eg
 		void clipInCameraSpace(float fov, float nearZ, float farZ);
 		void removeAddedClippingPolygons();
 	private:
-		Vector3f clipLineToNearPlane(const Vector4f* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane);
+		Vector3f clipLineToNearPlane(const Vertex* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane);
+		Vector4f computeRotation(const Vector4f& p) const;
 	};
 
 	struct Camera
