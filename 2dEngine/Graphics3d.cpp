@@ -274,26 +274,16 @@ namespace eg
 			}
 		}
 	}
-	void Object::drawSolid(Graphics2d& gfx) const
+	void Object::drawSolid(Graphics2d& gfx, const std::vector<Material>& materials) const
 	{
 		for (uint32_t i = 0; i < nPolygons; ++i)
 		{
 			if (polygons[i].state & eg::State::ACTIVE && !(polygons[i].state & eg::State::BACKFACE) &&
 				!(polygons[i].state & eg::State::CLIPPED))
 			{
-				switch (polygons[i].shadingMode)
-				{
-					case ShadingMode::CONST_COLOR:
-					{
-						gfx.drawTriangle(polygons[i].transformedCoords);
-						break;
-					}
-					default:
-					{
-						InvalidCodePath;
-						break;
-					}
-				}
+				gfx.drawTriangle(polygons[i].transformedCoords,
+					Delegate<Color(const Vertex&, const Material&)>::from <effects::constColorPixelShader>(),
+					materials[polygons[i].materialIndex]);
 			}
 		}
 	}
@@ -415,6 +405,80 @@ namespace eg
 		nPolygons -= nAddedClippingPolygons;
 		nAddedClippingPolygons = 0;
 	}
+	void Object::doConstantShading()
+	{
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			if (polygons[i].state & State::ACTIVE && !(polygons[i].state & State::BACKFACE))
+			{
+				for (uint32_t j = 0; j < 3; ++j)
+				{
+					polygons[i].transformedCoords[j].shadedColor = polygons[i].transformedCoords[j].color;
+				}
+			}
+		}
+	}
+	void Object::doFlatShading(const std::vector<Light>& lights)
+	{
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			if (polygons[i].state & State::ACTIVE && !(polygons[i].state & State::BACKFACE))
+			{
+				const Color& baseColor = polygons[i].transformedCoords[0].color;
+				Color result(0);
+				for (auto it = lights.begin(); it != lights.end(); ++it)
+				{
+					if (!it->active)
+						continue;
+
+					switch (it->lightType)
+					{
+						case LightType::AMBIENT:
+						{
+							result += it->ambientIntensity * baseColor;
+							break;
+						}
+						case LightType::DIRECTIONAL:
+						{
+							Vector3f u = polygons[i].transformedCoords[1].pos - polygons[i].transformedCoords[0].pos;
+							Vector3f v = polygons[i].transformedCoords[2].pos - polygons[i].transformedCoords[0].pos;
+							Vector3f n = u.crossProduct(v).normalize();
+
+							float dotProduct = n.dotProduct(it->dir);
+							if (dotProduct > 0.0f)
+							{
+								result += it->diffuseIntensity * baseColor * dotProduct;
+							}
+							break;
+						}
+						case LightType::POINT:
+						{
+							Vector3f u = polygons[i].transformedCoords[1].pos - polygons[i].transformedCoords[0].pos;
+							Vector3f v = polygons[i].transformedCoords[2].pos - polygons[i].transformedCoords[0].pos;
+							Vector3f n = u.crossProduct(v).normalize();
+
+							Vector3f surfaceLightDir = it->pos - polygons[i].transformedCoords[0].pos;
+							float dist = surfaceLightDir.getLenght();
+							float attenuation = it->attenuationConstant + it->attentuationLinear * dist + it->attenuationQuadratic *
+								dist * dist;
+							
+							float dotProduct = n.dotProduct(surfaceLightDir);
+							if (dotProduct > 0)
+							{
+								result += (it->diffuseIntensity * baseColor * dotProduct) / attenuation;
+							}
+							break;
+						}
+					}
+				}
+
+				for (uint32_t j = 0; j < 3; ++j)
+				{
+					polygons[i].transformedCoords[j].shadedColor = result;
+				}
+			}
+		}
+	}
 	Vector3f Object::clipLineToNearPlane(const Vertex* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane)
 	{
 		assert(p0Index < 3 && p1Index < 3);
@@ -504,4 +568,15 @@ namespace eg
 		worldToCameraTransform = Mat4x4::translate(-worldPos) * Mat4x4::rotateZ(-direction.z) * Mat4x4::rotateY(-direction.y) *
 			Mat4x4::rotateX(-direction.x);
 	}
+	void Material::computeReflectivities()
+	{
+		reflectivityA *= ambient;
+		reflectivityD *= diffuse;
+		reflectivityS *= specular;
+	}
+}
+
+Color eg::effects::constColorPixelShader(const Vertex& vertex, const Material& material)
+{
+	return vertex.color;
 }

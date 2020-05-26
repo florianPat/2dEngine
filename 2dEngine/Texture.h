@@ -8,16 +8,16 @@ namespace eg
 	class Texture
 	{
 	protected:
-		int width, height;
+		int32_t width = 0, height = 0;
 		Color* pixels = nullptr;
 	protected:
 		int leastSignificantSetBit(int bitfield);
-		Texture() = default;
 	private:
 		void loadBmp(const std::string& filename);
 		void loadPng(const std::string& filename);
 		void swapEndian(uint& value);
 	public:
+		Texture() = default;
 		Texture(const std::string& filename);
 		Texture(const Texture& other);
 		Texture& operator=(const Texture& other);

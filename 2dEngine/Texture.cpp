@@ -84,15 +84,15 @@ namespace eg
 						if (bitCount == 32)
 						{
 							file.read(reinterpret_cast<char*>(&color), sizeof(color));
-							c.SetR((char)(color >> leastSignificantSetBit(redMask)));
-							c.SetG((char)(color >> leastSignificantSetBit(greenMask)));
-							c.SetB((char)(color >> leastSignificantSetBit(blueMask)));
+							c.setR((char)(color >> leastSignificantSetBit(redMask)));
+							c.setG((char)(color >> leastSignificantSetBit(greenMask)));
+							c.setB((char)(color >> leastSignificantSetBit(blueMask)));
 						}
 						else
 						{
-							c.SetB(file.get());
-							c.SetG(file.get());
-							c.SetR(file.get());
+							c.setB(file.get());
+							c.setG(file.get());
+							c.setR(file.get());
 						}
 
 						assert(x >= 0);
@@ -116,23 +116,23 @@ namespace eg
 						if (bitCount == 32)
 						{
 							file.read(reinterpret_cast<char*>(&color), sizeof(color));
-							c.SetR((char)(color >> leastSignificantSetBit(redMask)));
-							c.SetG((char)(color >> leastSignificantSetBit(greenMask)));
-							c.SetB((char)(color >> leastSignificantSetBit(blueMask)));
-							c.SetA((char)(color >> leastSignificantSetBit(alphaMask)));
+							c.setR((char)(color >> leastSignificantSetBit(redMask)));
+							c.setG((char)(color >> leastSignificantSetBit(greenMask)));
+							c.setB((char)(color >> leastSignificantSetBit(blueMask)));
+							c.setA((char)(color >> leastSignificantSetBit(alphaMask)));
 						}
 						else
 						{
-							c.SetB(file.get());
-							c.SetG(file.get());
-							c.SetR(file.get());
-							c.SetA(255);
+							c.setB(file.get());
+							c.setG(file.get());
+							c.setR(file.get());
+							c.setA(255);
 						}
 
-						float rA = c.GetA() / 255.0f;
-						c.SetR((char)(c.GetR() * rA + 0.5f));
-						c.SetG((char)(c.GetG() * rA + 0.5f));
-						c.SetB((char)(c.GetB() * rA + 0.5f));
+						float rA = c.getA() / 255.0f;
+						c.setR((char)(c.getR() * rA + 0.5f));
+						c.setG((char)(c.getG() * rA + 0.5f));
+						c.setB((char)(c.getB() * rA + 0.5f));
 
 						assert(x >= 0);
 						assert(x < width);
@@ -246,8 +246,11 @@ namespace eg
 
 	Texture::~Texture()
 	{
-		delete[] pixels;
-		pixels = nullptr;
+		if (pixels != nullptr)
+		{
+			delete[] pixels;
+			pixels = nullptr;
+		}
 	}
 
 	int Texture::getWidth() const

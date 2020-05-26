@@ -27,6 +27,11 @@ typedef uint8_t uchar;
 #define Megabyte(x) Kilobyte(x) * 1024ll
 #define Gigabyte(x) Megabyte(x) * 1024ll
 
+#undef max
+#define max(a, b) (a > b ? a : b)
+#undef min
+#define min(a, b) (a < b ? a : b)
+
 inline float lerp(float v0, float v1, float t)
 {
 	return (1 - t) * v0 + t * v1;

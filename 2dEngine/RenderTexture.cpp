@@ -26,14 +26,14 @@ void eg::RenderTexture::draw(const Texture& texture, int xPos, int yPos)
 			Color c;
 
 			Color sc = texture.getPixel(x, y);
-			float rScA = sc.GetA() / 255.0f;
+			float rScA = sc.getA() / 255.0f;
 			Color dc = getPixel(x + xPos, y + yPos);
-			float rDcA = dc.GetA() / 255.0f;
+			float rDcA = dc.getA() / 255.0f;
 
-			c.SetR((char)((sc.GetR() + (dc.GetR() * (1 - rScA))) + 0.5f));
-			c.SetG((char)((sc.GetG() + (dc.GetG() * (1 - rScA))) + 0.5f));
-			c.SetB((char)((sc.GetB() + (dc.GetB() * (1 - rScA))) + 0.5f));
-			c.SetA((char)((rScA + rDcA - rScA * rDcA) * 255.0f));
+			c.setR((char)((sc.getR() + (dc.getR() * (1 - rScA))) + 0.5f));
+			c.setG((char)((sc.getG() + (dc.getG() * (1 - rScA))) + 0.5f));
+			c.setB((char)((sc.getB() + (dc.getB() * (1 - rScA))) + 0.5f));
+			c.setA((char)((rScA + rDcA - rScA * rDcA) * 255.0f));
 
 			putPixel(x + (uint)xPos, y + (uint)yPos, c);
 		}

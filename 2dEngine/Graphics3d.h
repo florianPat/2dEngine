@@ -9,14 +9,6 @@
 
 namespace eg
 {
-	enum class ShadingMode
-	{
-		CONST_COLOR,
-		FLAT,
-		GOURAUD,
-		PHONG,
-	};
-
 	enum State
 	{
 		ACTIVE = 1,
@@ -30,15 +22,57 @@ namespace eg
 		Vector3f normal;
 		Vector2f textureCoord;
 		Color color = Colors::White;
+		Color shadedColor;
 	};
 
 	struct Polygon
 	{
 		Vertex localCoords[3];
 		Vertex transformedCoords[3];
-		ShadingMode shadingMode = ShadingMode::CONST_COLOR;
 		uint32_t state = State::ACTIVE;
+		uint32_t materialIndex = 0;
 	};
+
+	struct Material
+	{
+		Color emissiveColor;
+		float ambient, diffuse, specular, specularPower;
+		Texture texture;
+		Color reflectivityA, reflectivityD, reflectivityS;
+
+		void computeReflectivities();
+	};
+
+	enum class LightType
+	{
+		AMBIENT,
+		DIRECTIONAL,
+		POINT,
+		EMISSIVE,
+		SPOT,
+	};
+
+	struct Light
+	{
+		LightType lightType;
+
+		Color ambientIntensity;
+		Color diffuseIntensity;
+		Color specularIntensity;
+
+		Vector3f pos;
+		Vector3f dir;
+
+		float attenuationConstant, attentuationLinear, attenuationQuadratic;
+		float spotInner, spotOuter, spotPower;
+
+		bool active = true;
+	};
+
+	namespace effects
+	{
+		Color constColorPixelShader(const Vertex& vertex, const Material& material);
+	}
 
 	enum class TransformCase
 	{
@@ -65,9 +99,11 @@ namespace eg
 		void cullBackfaces(const Vector3f cameraWorldPos);
 		void clearFlags();
 		void drawWireframe(Graphics2d& gfx) const;
-		void drawSolid(Graphics2d& gfx) const;
+		void drawSolid(Graphics2d& gfx, const std::vector<Material>& materials) const;
 		void clipInCameraSpace(float fov, float nearZ, float farZ);
 		void removeAddedClippingPolygons();
+		void doConstantShading();
+		void doFlatShading(const std::vector<Light>& lights);
 	private:
 		Vector3f clipLineToNearPlane(const Vertex* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane);
 		Vector4f computeRotation(const Vector4f& p) const;

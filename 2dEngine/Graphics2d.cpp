@@ -2,7 +2,12 @@
 #include "Graphics3d.h"
 
 #define VERTEX_ATTRIBUTE_LERP(v1Attribute, v1Lerp, vAt, v0Attribute, v0Lerp) \
-	(v1Attribute * (v1Lerp - vAt) + v0Attribute * (vAt - v0Lerp)) / (v1Lerp - v0Lerp)
+	v1Attribute * ((v1Lerp - vAt) / (v1Lerp - v0Lerp)) + v0Attribute * ((vAt - v0Lerp) / (v1Lerp - v0Lerp))
+
+#define VERTEX_ATTRIBUTE_LERP_Y_LEFT_AND_RIGHT(v1Left, v0Left, v1Right, v0Right, attribute, type, yAt) \
+	std::pair<type, type> attribute; \
+	attribute.first = VERTEX_ATTRIBUTE_LERP(v1Left.attribute, v1Left.pos.y, yAt, v0Left.attribute, v0Left.pos.y); \
+	attribute.second = VERTEX_ATTRIBUTE_LERP(v1Right.attribute, v1Right.pos.y, yAt, v0Right.attribute, v0Right.pos.y);
 
 namespace eg
 {
@@ -40,7 +45,8 @@ namespace eg
 			y = height - 1;
 	}
 
-	void Graphics2d::drawFlatBottomTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2)
+	void Graphics2d::drawFlatBottomTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2,
+		const Delegate<Color(const Vertex&, const Material&)>& pixelShader, const Material& material)
 	{
 		Vector2i clipP0, clipP1;
 
@@ -54,13 +60,18 @@ namespace eg
 			uint32_t zBufferIndex = (uint32_t)v0.pos.y * height + (uint32_t)v0.pos.x;
 			if (v0.pos.z > zBuffer[zBufferIndex])
 			{
-				putPixel((int32_t)v0.pos.x, (int32_t)v0.pos.y, v0.color);
+				Vertex interpolatedVertex = {};
+				interpolatedVertex.pos = { v0.pos.x, v0.pos.y, 1.0f, 1.0f };
+				interpolatedVertex.normal = v0.normal;
+				interpolatedVertex.textureCoord = v0.textureCoord;
+				interpolatedVertex.color = v0.shadedColor;
+				putPixel((int32_t)v0.pos.x, (int32_t)v0.pos.y, pixelShader(interpolatedVertex, material));
 				zBuffer[zBufferIndex] = v0.pos.z;
 			}
 		}
 
 		float x0 = v0.pos.x, x1 = v0.pos.x;
-		float zLeft = v0.pos.w, zRight = v1.pos.w;
+		float zLeft = v0.pos.z, zRight = v0.pos.z;
 		for (float i = v0.pos.y + 1; i < v1.pos.y; ++i)
 		{
 			x0 += dyLeft;
@@ -69,6 +80,9 @@ namespace eg
 			zRight += dzRight;
 			float dzX = (-zLeft + zRight) / (x1 - x0);
 			float z = zLeft;
+			VERTEX_ATTRIBUTE_LERP_Y_LEFT_AND_RIGHT(v1, v0, v2, v0, normal, Vector3f, i);
+			VERTEX_ATTRIBUTE_LERP_Y_LEFT_AND_RIGHT(v1, v0, v2, v0, textureCoord, Vector2f, i);
+			VERTEX_ATTRIBUTE_LERP_Y_LEFT_AND_RIGHT(v1, v0, v2, v0, shadedColor, Color, i);
 
 			if (i < 0.0f || i >= height)
 				continue;
@@ -80,7 +94,12 @@ namespace eg
 					uint32_t zBufferIndex = (uint32_t)i * height + (uint32_t)x;
 					if (z > zBuffer[zBufferIndex])
 					{
-						putPixel((int32_t)x, (int32_t)i, v0.color);
+						Vertex interpolatedVertex = {};
+						interpolatedVertex.pos = { x, i, 1.0f, 1.0f };
+						interpolatedVertex.normal = VERTEX_ATTRIBUTE_LERP(normal.second, x1, x, normal.first, x0);
+						interpolatedVertex.textureCoord = VERTEX_ATTRIBUTE_LERP(textureCoord.second, x1, x, textureCoord.first, x0);
+						interpolatedVertex.color = VERTEX_ATTRIBUTE_LERP(shadedColor.second, x1, x, shadedColor.first, x0);
+						putPixel((int32_t)x, (int32_t)i, pixelShader(interpolatedVertex, material));
 						zBuffer[zBufferIndex] = z;
 					}
 				}
@@ -101,7 +120,12 @@ namespace eg
 				uint32_t zBufferIndex = (uint32_t)v1.pos.y * height + (uint32_t)x;
 				if (z > zBuffer[zBufferIndex])
 				{
-					putPixel((uint32_t)x, (uint32_t)v1.pos.y, v0.color);
+					Vertex interpolatedVertex = {};
+					interpolatedVertex.pos = { x, v1.pos.y, 1.0f, 1.0f };
+					interpolatedVertex.normal = VERTEX_ATTRIBUTE_LERP(v2.normal, v2.pos.x, x, v1.normal, v1.pos.x);
+					interpolatedVertex.textureCoord = VERTEX_ATTRIBUTE_LERP(v2.textureCoord, v2.pos.x, x, v1.textureCoord, v1.pos.x);
+					interpolatedVertex.color = VERTEX_ATTRIBUTE_LERP(v2.shadedColor, v2.pos.x, x, v1.shadedColor, v1.pos.x);
+					putPixel((uint32_t)x, (uint32_t)v1.pos.y, pixelShader(interpolatedVertex, material));
 					zBuffer[zBufferIndex] = z;
 				}
 			}
@@ -110,7 +134,8 @@ namespace eg
 		}
 	}
 
-	void Graphics2d::drawFlatTopTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2)
+	void Graphics2d::drawFlatTopTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2,
+		const Delegate<Color(const Vertex&, const Material&)>& pixelShader, const Material& material)
 	{
 		Vector2i clipP0, clipP1;
 
@@ -130,7 +155,12 @@ namespace eg
 					uint32_t zBufferIndex = (uint32_t)v0.pos.y * height + (uint32_t)x;
 					if (z > zBuffer[zBufferIndex])
 					{
-						putPixel((uint32_t)x, (uint32_t)v0.pos.y, v0.color);
+						Vertex interpolatedVertex = {};
+						interpolatedVertex.pos = { x, v0.pos.y, 1.0f, 1.0f };
+						interpolatedVertex.normal = VERTEX_ATTRIBUTE_LERP(v1.normal, v1.pos.x, x, v0.normal, v0.pos.x);
+						interpolatedVertex.textureCoord = VERTEX_ATTRIBUTE_LERP(v1.textureCoord, v1.pos.x, x, v0.textureCoord, v0.pos.x);
+						interpolatedVertex.color = VERTEX_ATTRIBUTE_LERP(v1.shadedColor, v1.pos.x, x, v0.shadedColor, v0.pos.x);
+						putPixel((uint32_t)x, (uint32_t)v0.pos.y, pixelShader(Vertex{}, material));
 						zBuffer[zBufferIndex] = z;
 					}
 				}
@@ -149,6 +179,9 @@ namespace eg
 			zRight += dzRight;
 			float dzX = (-zLeft + zRight) / (x1 - x0);
 			float z = zLeft;
+			VERTEX_ATTRIBUTE_LERP_Y_LEFT_AND_RIGHT(v2, v0, v2, v1, normal, Vector3f, i);
+			VERTEX_ATTRIBUTE_LERP_Y_LEFT_AND_RIGHT(v2, v0, v2, v1, textureCoord, Vector2f, i);
+			VERTEX_ATTRIBUTE_LERP_Y_LEFT_AND_RIGHT(v2, v0, v2, v1, shadedColor, Color, i);
 
 			if (i < 0.0f || i >= height)
 				continue;
@@ -160,7 +193,12 @@ namespace eg
 					uint32_t zBufferIndex = (uint32_t)i * height + (uint32_t)x;
 					if (z > zBuffer[zBufferIndex])
 					{
-						putPixel((int32_t)x, (int32_t)i, v0.color);
+						Vertex interpolatedVertex = {};
+						interpolatedVertex.pos = { x, i, 1.0f, 1.0f };
+						interpolatedVertex.normal = VERTEX_ATTRIBUTE_LERP(normal.second, x1, x, normal.first, x0);
+						interpolatedVertex.textureCoord = VERTEX_ATTRIBUTE_LERP(textureCoord.second, x1, x, textureCoord.first, x0);
+						interpolatedVertex.color = VERTEX_ATTRIBUTE_LERP(shadedColor.second, x1, x, shadedColor.first, x0);
+						putPixel((int32_t)x, (int32_t)i, pixelShader(interpolatedVertex, material));
 						zBuffer[zBufferIndex] = z;
 					}
 				}
@@ -174,7 +212,12 @@ namespace eg
 			uint32_t zBufferIndex = (uint32_t)v2.pos.y * height + (uint32_t)v2.pos.x;
 			if (v2.pos.z > zBuffer[zBufferIndex])
 			{
-				putPixel((int32_t)v2.pos.x, (int32_t)v2.pos.y, v0.color);
+				Vertex interpolatedVertex = {};
+				interpolatedVertex.pos = { v2.pos.x, v2.pos.y, 1.0f, 1.0f };
+				interpolatedVertex.normal = v2.normal;
+				interpolatedVertex.textureCoord = v2.textureCoord;
+				interpolatedVertex.color = v2.shadedColor;
+				putPixel((int32_t)v2.pos.x, (int32_t)v2.pos.y, pixelShader(interpolatedVertex, material));
 				zBuffer[zBufferIndex] = v2.pos.z;
 			}
 		}
@@ -210,7 +253,7 @@ namespace eg
 
 	void Graphics2d::putPixel(int x, int y, Color c)
 	{
-		backBuffer[x + y * pitch] = ((c.GetR()) | ((c.GetG()) << 8) | ((c.GetB()) << 16) | (c.GetA() << 24));
+		backBuffer[x + y * pitch] = c.color;
 	}
 
 	Color Graphics2d::getPixel(uint x, uint y)
@@ -363,20 +406,20 @@ namespace eg
 					Color c;
 
 					Color sc;
-					sc.SetR((uchar)(Lerp(Lerp(texelA.GetR() / 255.0f, fX, texelB.GetR() / 255.0f), fY, Lerp(texelC.GetR() / 255.0f, fX, texelD.GetR() / 255.0f)) * 255));
-					sc.SetG((uchar)(Lerp(Lerp(texelA.GetG() / 255.0f, fX, texelB.GetG() / 255.0f), fY, Lerp(texelC.GetG() / 255.0f, fX, texelD.GetG() / 255.0f)) * 255));
-					sc.SetB((uchar)(Lerp(Lerp(texelA.GetB() / 255.0f, fX, texelB.GetB() / 255.0f), fY, Lerp(texelC.GetB() / 255.0f, fX, texelD.GetB() / 255.0f)) * 255));
-					sc.SetA((uchar)(Lerp(Lerp(texelA.GetA() / 255.0f, fX, texelB.GetA() / 255.0f), fY, Lerp(texelC.GetA() / 255.0f, fX, texelD.GetA() / 255.0f)) * 255));
+					sc.setR((uchar)(Lerp(Lerp(texelA.getR() / 255.0f, fX, texelB.getR() / 255.0f), fY, Lerp(texelC.getR() / 255.0f, fX, texelD.getR() / 255.0f)) * 255));
+					sc.setG((uchar)(Lerp(Lerp(texelA.getG() / 255.0f, fX, texelB.getG() / 255.0f), fY, Lerp(texelC.getG() / 255.0f, fX, texelD.getG() / 255.0f)) * 255));
+					sc.setB((uchar)(Lerp(Lerp(texelA.getB() / 255.0f, fX, texelB.getB() / 255.0f), fY, Lerp(texelC.getB() / 255.0f, fX, texelD.getB() / 255.0f)) * 255));
+					sc.setA((uchar)(Lerp(Lerp(texelA.getA() / 255.0f, fX, texelB.getA() / 255.0f), fY, Lerp(texelC.getA() / 255.0f, fX, texelD.getA() / 255.0f)) * 255));
 
-					float rScA = sc.GetA() / 255.0f;
+					float rScA = sc.getA() / 255.0f;
 					
 					Color dc = getPixel(x + (int)sprite.pos.x, y + (int)sprite.pos.y);
-					float rDcA = dc.GetA() / 255.0f;
+					float rDcA = dc.getA() / 255.0f;
 
-					c.SetR((char)((sc.GetR() + (dc.GetR() * (1 - rScA))) + 0.5f));
-					c.SetG((char)((sc.GetG() + (dc.GetG() * (1 - rScA))) + 0.5f));
-					c.SetB((char)((sc.GetB() + (dc.GetB() * (1 - rScA))) + 0.5f));
-					c.SetA((char)((rScA + rDcA - rScA * rDcA) * 255.0f));
+					c.setR((char)((sc.getR() + (dc.getR() * (1 - rScA))) + 0.5f));
+					c.setG((char)((sc.getG() + (dc.getG() * (1 - rScA))) + 0.5f));
+					c.setB((char)((sc.getB() + (dc.getB() * (1 - rScA))) + 0.5f));
+					c.setA((char)((rScA + rDcA - rScA * rDcA) * 255.0f));
 
 					putPixel(x + (uint)sprite.pos.x, y + (uint)sprite.pos.y, c);
 				}
@@ -574,8 +617,8 @@ namespace eg
 		if(clipLine(points[points.size() - 1], points[0]))
 			drawLine(points[points.size() - 1], points[0], color);
 	}
-
-	void Graphics2d::drawTriangle(const Vertex* vertices)
+	void Graphics2d::drawTriangle(const Vertex* vertices, const Delegate<Color(const Vertex&, const Material&)>& pixelShader,
+		const Material& material)
 	{
 		const Vertex* v0 = vertices, * v1 = &vertices[1], * v2 = &vertices[2];
 
@@ -609,7 +652,7 @@ namespace eg
 				v0 = temp;
 			}
 
-			drawFlatTopTriangle(*v0, *v1, *v2);
+			drawFlatTopTriangle(*v0, *v1, *v2, pixelShader, material);
 		}
 		else if (v1->pos.y == v2->pos.y)
 		{
@@ -620,7 +663,7 @@ namespace eg
 				v1 = temp;
 			}
 
-			drawFlatBottomTriangle(*v0, *v1, *v2);
+			drawFlatBottomTriangle(*v0, *v1, *v2, pixelShader, material);
 		}
 		else
 		{
@@ -634,9 +677,10 @@ namespace eg
 				realV2.normal = VERTEX_ATTRIBUTE_LERP(v1->normal, v1->pos.y, realV2.pos.y, v0->normal, v0->pos.y);
 				realV2.normal.normalize();
 				realV2.textureCoord = VERTEX_ATTRIBUTE_LERP(v1->textureCoord, v1->pos.y, realV2.pos.y, v0->textureCoord, v0->pos.y);
+				realV2.shadedColor = VERTEX_ATTRIBUTE_LERP(v1->shadedColor, v1->pos.y, realV2.pos.y, v0->shadedColor, v0->pos.y);
 				
-				drawFlatBottomTriangle(*v0, realV2, *v1);
-				drawFlatTopTriangle(realV2, *v1, *v2);
+				drawFlatBottomTriangle(*v0, realV2, *v1, pixelShader, material);
+				drawFlatTopTriangle(realV2, *v1, *v2, pixelShader, material);
 			}
 			else
 			{
@@ -650,9 +694,10 @@ namespace eg
 				realV2.normal = VERTEX_ATTRIBUTE_LERP(v1->normal, v1->pos.y, realV2.pos.y, v0->normal, v0->pos.y);
 				realV2.normal.normalize();
 				realV2.textureCoord = VERTEX_ATTRIBUTE_LERP(v1->textureCoord, v1->pos.y, realV2.pos.y, v0->textureCoord, v0->pos.y);
+				realV2.shadedColor = VERTEX_ATTRIBUTE_LERP(v1->shadedColor, v1->pos.y, realV2.pos.y, v0->shadedColor, v0->pos.y);
 
-				drawFlatBottomTriangle(*v0, *v1, realV2);
-				drawFlatTopTriangle(*v1, realV2, *v2);
+				drawFlatBottomTriangle(*v0, *v1, realV2, pixelShader, material);
+				drawFlatTopTriangle(*v1, realV2, *v2, pixelShader, material);
 			}
 		}
 	}

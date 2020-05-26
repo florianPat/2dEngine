@@ -166,6 +166,7 @@
     <ClInclude Include="Circle.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Delegate.h" />
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="Graphics2d.h" />
     <ClInclude Include="Graphics3d.h" />
