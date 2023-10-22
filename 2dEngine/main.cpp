@@ -16,7 +16,7 @@ int main()
 
 	eg::Object object = eg::PlyLoader::load("cube.ply", { 0.0f, 0.0f, 0.0f }, eg::Vector3f(), { 1.0f, 1.0f, 1.0f });
 	object.worldPos.z = 5.0f;
-	object.rot.y = 45.0f;
+	//object.rot.y = 45.0f;
 	const float fov = 90.0f;
 	const float nearZ = 2.0f;
 	const float farZ = 100.0f;
@@ -32,7 +32,7 @@ int main()
 	eg::Light directionalLight = {};
 	directionalLight.lightType = eg::LightType::DIRECTIONAL;
 	directionalLight.diffuseIntensity = Color(255, 255, 0);
-	directionalLight.dir = eg::Vector3f(1.0f, 1.0f, 0.0f).normalize();
+	directionalLight.dir = eg::Vector3f(-1.0f, -1.0f, 0.0f).normalize();
 	lights.push_back(directionalLight);
 	eg::Light pointLight = {};
 	pointLight.lightType = eg::LightType::POINT;
@@ -66,7 +66,8 @@ int main()
 		object.modelToWorldTranslation(eg::TransformCase::TRANSFORM_COORDS_ONLY);
 		object.cullBackfaces(camera.worldPos);
 		//object.doConstantShading();
-		object.doFlatShading(lights);
+		//object.doFlatShading(lights);
+		object.doGouradShading(lights);
 		object.transform(camera.worldToCameraTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY);
 		object.clipInCameraSpace(fov, nearZ, farZ);
 		object.transform(camera.cameraToPerspectiveTransform, eg::TransformCase::TRANSFORM_COORDS_ONLY);

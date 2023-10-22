@@ -104,6 +104,7 @@ namespace eg
 		void removeAddedClippingPolygons();
 		void doConstantShading();
 		void doFlatShading(const std::vector<Light>& lights);
+		void doGouradShading(const std::vector<Light>& lights);
 	private:
 		Vector3f clipLineToNearPlane(const Vertex* coords, float zNear, uint32_t p0Index, uint32_t p1Index, const Plane& plane);
 		Vector4f computeRotation(const Vector4f& p) const;

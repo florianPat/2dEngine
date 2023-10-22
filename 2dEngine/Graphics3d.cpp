@@ -463,7 +463,7 @@ namespace eg
 								dist * dist;
 							
 							float dotProduct = n.dotProduct(surfaceLightDir);
-							if (dotProduct > 0)
+							if (dotProduct > 0.0f)
 							{
 								result += (it->diffuseIntensity * baseColor * dotProduct) / attenuation;
 							}
@@ -474,6 +474,64 @@ namespace eg
 
 				for (uint32_t j = 0; j < 3; ++j)
 				{
+					polygons[i].transformedCoords[j].shadedColor = result;
+				}
+			}
+		}
+	}
+	void Object::doGouradShading(const std::vector<Light>& lights)
+	{
+		for (uint32_t i = 0; i < nPolygons; ++i)
+		{
+			if (polygons[i].state & State::ACTIVE && !(polygons[i].state & State::BACKFACE))
+			{
+				for (uint32_t j = 0; j < 3; ++j)
+				{
+					const Color& baseColor = polygons[i].transformedCoords[j].color;
+					Color result(0);
+					for (auto it = lights.begin(); it != lights.end(); ++it)
+					{
+						if (!it->active)
+							continue;
+
+						switch (it->lightType)
+						{
+							case LightType::AMBIENT:
+							{
+								result += it->ambientIntensity * baseColor;
+								break;
+							}
+							case LightType::DIRECTIONAL:
+							{
+								// NOTE: The normal appears to be quite off and not really what i excpected...
+								Vector3f n = polygons[i].transformedCoords[j].normal;
+
+								float dotProduct = n.dotProduct(it->dir);
+								if (dotProduct > 0.0f)
+								{
+									result += it->diffuseIntensity * baseColor * dotProduct;
+								}
+								break;
+							}
+							case LightType::POINT:
+							{
+								Vector3f n = polygons[i].transformedCoords[j].normal;
+
+								Vector3f surfaceLightDir = it->pos - polygons[i].transformedCoords[j].pos;
+								float dist = surfaceLightDir.getLenght();
+								float attenuation = it->attenuationConstant + it->attentuationLinear * dist +
+									it->attenuationQuadratic * dist * dist;
+
+								float dotProduct = n.dotProduct(surfaceLightDir);
+								if (dotProduct > 0.0f)
+								{
+									result += (it->diffuseIntensity * baseColor * dotProduct) / attenuation;
+								}
+								break;
+							}
+						}
+					}
+
 					polygons[i].transformedCoords[j].shadedColor = result;
 				}
 			}
